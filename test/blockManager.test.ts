@@ -2,8 +2,8 @@ import assert from "assert";
 import { describe, it } from "mocha";
 import { enableLogging } from "../src/util/logger";
 import BlockManager from "../src/blockManager";
-import StateLogSubsriber from "../src/stateLogSubscriber";
 import LogSubscriber from "../src/logSubscriber";
+import StateLogSubScriber from '../src/stateLogSubscriber';
 import { Log } from "@ethersproject/providers";
 
 enableLogging();
@@ -80,7 +80,7 @@ class MockRpc {
   }
 }
 
-class MockSubscriber extends StateLogSubsriber<string, any> {
+class MockSubscriber extends StateLogSubScriber<string, any> {
   constructor(
     public address: string,
     public blockByNumber: Record<number, BlockLogsState>

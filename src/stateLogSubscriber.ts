@@ -5,7 +5,7 @@ import logger from "./util/logger";
 import BlockManager from "./blockManager";
 import LogSubscriber from "./logSubscriber";
 
-namespace StateLogSubsriber {
+namespace StateLogSubscriber {
   export type StateAndBlock<T> = {
     block: BlockManager.BlockWithoutParentHash;
     state: T;
@@ -13,11 +13,11 @@ namespace StateLogSubsriber {
 }
 
 /**
- * StateLogSubsriber is an abstract implementation of LogSubscriber which keep
+ * StateLogSubscriber is an abstract implementation of LogSubscriber which keep
  * one state object for each new block found in `handleLog` and store it in cache.
  * This class handle rollback by using previous state found in cache.
  */
-abstract class StateLogSubsriber<
+abstract class StateLogSubscriber<
   T,
   ParsedEvent
 > extends LogSubscriber<ParsedEvent> {
@@ -43,7 +43,7 @@ abstract class StateLogSubsriber<
   }
 
   /* return latest state */
-  public getLatestState(): StateLogSubsriber.StateAndBlock<T> {
+  public getLatestState(): StateLogSubscriber.StateAndBlock<T> {
     this.checkIfLastSeenEventBlockExists();
 
     return {
@@ -56,7 +56,7 @@ abstract class StateLogSubsriber<
   public async initialize(
     wantedBlock: BlockManager.BlockWithoutParentHash
   ): Promise<LogSubscriber.InitializeErrorOrBlock> {
-    logger.debug("[StateLogSubsriber] initialize() ");
+    logger.debug("[StateLogSubscriber] initialize() ");
     this.stateByBlockNumber = {};
 
     this.initializedAt = undefined;
@@ -64,7 +64,7 @@ abstract class StateLogSubsriber<
     const { error, ok } = await this.stateInitialize(wantedBlock);
 
     if (error) {
-      logger.debug(`[StateLogSubsriber] initialize() failed ${error}`);
+      logger.debug(`[StateLogSubscriber] initialize() failed ${error}`);
       return { error, ok: undefined };
     }
 
@@ -73,7 +73,7 @@ abstract class StateLogSubsriber<
     this.stateByBlockNumber[block.number] = state;
     this.lastSeenEventBlock = block;
 
-    logger.debug("[StateLogSubsriber] initialize done");
+    logger.debug("[StateLogSubscriber] initialize done");
 
     return { error: undefined, ok: block };
   }
@@ -126,4 +126,4 @@ abstract class StateLogSubsriber<
   }
 }
 
-export default StateLogSubsriber;
+export default StateLogSubscriber;
