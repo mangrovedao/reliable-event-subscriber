@@ -40,6 +40,7 @@
     "@mangrovedao/commonlib.js": "1.0.0",
     "async-mutex": "^0.4.0",
     "ethers": "^5.7.2",
+    "isomorphic-ws": "^5.0.0",
     "ws": "^8.13.0"
   }
 }
