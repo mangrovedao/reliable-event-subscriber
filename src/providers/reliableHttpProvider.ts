@@ -9,6 +9,9 @@ namespace ReliableHttpProvider {
   };
 }
 
+/**
+  * ReliableHttpProvider is an implementation of ReliableProvider. It use http polling to get new blocks 
+  */
 class ReliableHttpProvider extends ReliableProvider {
   private shouldStop: boolean = false;
   private mutex: Mutex = new Mutex();
@@ -57,7 +60,7 @@ class ReliableHttpProvider extends ReliableProvider {
             if (block.status === "rejected") {
               continue;
             }
-            await this.blockManager.handleBlock({
+            this.addBlockToQueue({
               parentHash: block.value.parentHash,
               hash: block.value.hash,
               number: block.value.number,
@@ -67,7 +70,7 @@ class ReliableHttpProvider extends ReliableProvider {
 
         this.lastKnownBlockNumber = blockHeader.number;
 
-        await this.blockManager.handleBlock({
+        this.addBlockToQueue({
           parentHash: blockHeader.parentHash,
           hash: blockHeader.hash,
           number: blockHeader.number,

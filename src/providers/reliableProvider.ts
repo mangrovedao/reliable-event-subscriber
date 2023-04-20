@@ -13,6 +13,12 @@ namespace ReliableProvider {
   };
 }
 
+/**
+  * ReliableProvider is an abstract handling block and logs fetching.
+  *
+  * The actual implementation needs to query new blocks and add them to the queue using 
+  * addBlockToQueue function.   
+  */
 abstract class ReliableProvider {
   public blockManager: BlockManager;
 

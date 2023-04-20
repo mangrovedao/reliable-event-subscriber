@@ -16,6 +16,10 @@ namespace ReliableWebsocketProvider {
   >;
 }
 
+/**
+  * ReliableWebsocketProvider is an implementation of ReliableProvider. It use websocket
+  * subscription to "newHeads" to get new block.
+  */
 class ReliableWebsocketProvider extends ReliableProvider {
   private reliableWebSocket: ReliableWebSocket;
 
