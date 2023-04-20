@@ -1,5 +1,5 @@
 {
-  "name": "@mangrovedao/rr-tracker",
+  "name": "@mangrovedao/reliable-event-subscriber",
   "version": "0.0.1",
   "main": "dist/index.js",
   "author": "Louis-Amas <amaslouis@protonmail.com>",
