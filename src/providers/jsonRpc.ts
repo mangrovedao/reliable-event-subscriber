@@ -1,4 +1,4 @@
-import { Result } from "../../util/types";
+import { Result } from "../util/types";
 
 export namespace JsonRPC {
   export type Msg<T> = {

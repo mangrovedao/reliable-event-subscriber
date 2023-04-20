@@ -1,6 +1,6 @@
 import { Block } from "@ethersproject/providers";
 import { Mutex } from "async-mutex";
-import logger from "../../util/logger";
+import logger from "../util/logger";
 import ReliableProvider from "./reliableProvider";
 
 namespace ReliableHttpProvider {

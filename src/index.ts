@@ -1,9 +1,9 @@
-import BlockManager from "./tracker/blockManager";
-import ReliableProvider from "./tracker/providers/reliableProvider";
-import ReliableWebsocketProvider from "./tracker/providers/reliableWebsocketProvider";
-import ReliableHttpProvider from "./tracker/providers/reliableHttpProvider";
-import LogSubscriber from "./tracker/logSubscriber";
-import StateLogSubscriber from "./tracker/stateLogSubscriber";
+import BlockManager from "./blockManager";
+import ReliableProvider from "./providers/reliableProvider";
+import ReliableWebsocketProvider from "./providers/reliableWebsocketProvider";
+import ReliableHttpProvider from "./providers/reliableHttpProvider";
+import LogSubscriber from "./logSubscriber";
+import StateLogSubscriber from "./stateLogSubscriber";
 
 export {
   BlockManager,

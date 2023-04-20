@@ -1,9 +1,9 @@
 import assert from "assert";
 import { describe, it } from "mocha";
-import { enableLogging } from "../../src/util/logger";
-import BlockManager from "../../src/tracker/blockManager";
-import StateLogSubsriber from "../../src/tracker/stateLogSubscriber";
-import LogSubscriber from "../../src/tracker/logSubscriber";
+import { enableLogging } from "../src/util/logger";
+import BlockManager from "../src/blockManager";
+import StateLogSubsriber from "../src/stateLogSubscriber";
+import LogSubscriber from "../src/logSubscriber";
 import { Log } from "@ethersproject/providers";
 
 enableLogging();

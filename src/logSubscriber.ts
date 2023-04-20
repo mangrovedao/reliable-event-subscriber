@@ -1,5 +1,5 @@
 import { Log } from "@ethersproject/providers";
-import { Result } from "../util/types";
+import { Result } from "./util/types";
 import BlockManager from "./blockManager";
 
 namespace LogSubscriber {

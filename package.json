@@ -33,7 +33,7 @@
     "lint": "tsc --noEmit && eslint \"**/*.ts\" --quiet --fix",
     "serve": "ts-node ./src",
     "start": "node ./dist",
-    "test:tracker": "cross-env NODE_ENV=test nyc --reporter=lcov mocha --config test/mocha/config/unit-tests.json --exit",
+    "test": "cross-env NODE_ENV=test nyc --reporter=lcov mocha --config test/mocha/config/unit-tests.json --exit",
     "build-this-package": "tsc"
   },
   "dependencies": {

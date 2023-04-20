@@ -1,9 +1,9 @@
 import { Log } from "@ethersproject/providers";
-import { sleep } from "../util/sleep";
+import { sleep } from "./util/sleep";
 import { getAddress } from "ethers/lib/utils";
-import logger, { enableLogging } from "../util/logger";
+import logger, { enableLogging } from "./util/logger";
 import LogSubscriber from "./logSubscriber";
-import { Result } from "../util/types";
+import { Result } from "./util/types";
 import { Mutex } from "async-mutex";
 
 enableLogging();
