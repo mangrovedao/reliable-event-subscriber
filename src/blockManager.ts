@@ -49,8 +49,9 @@ namespace BlockManager {
 
   export type ErrorOrLogsWithCommonAncestor = Result<
     {
-      logs: Log[];
-      commonAncestor?: Block;
+      logs: Log[]; // if commonAncestor exists than it's returning logs from commonAncestor.number + 1 to newblock.number
+      commonAncestor?: Block;// commonAncestor
+
     },
     {
       error:
@@ -64,8 +65,8 @@ namespace BlockManager {
 
   export type HandleBlockResult = Result<
     {
-      logs: Log[];
-      rollback?: Block;
+      logs: Log[]; // if rollback exists than it's returning logs from rollback.number + 1 to newblock.number
+      rollback?: Block; // if rollback, it's the last common ancestor
     },
     | ErrorLog
     | CommonAncestorOrBlockError
@@ -205,10 +206,10 @@ class BlockManager {
     await this.handleSubscribersInitialize(this.lastBlock);
   }
 
-  /* subscribeToLogs enable a subscription for all logs emitted for the contract at address
-   * only one subscription can exist by address. Calling a second time this function with the same
-   * address will result in cancelling the previous subscription.
-   * */
+  /* subscribeToLogs enables a subscription for all logs emitted for the contract at the address.
+   * Only one subscription can exist by address. Calling a second time this function with the same
+    * address will result in cancelling the previous subscription.
+    * */
   public async subscribeToLogs(
     addressAndTopics: BlockManager.AddressAndTopics,
     subscriber: LogSubscriber<any>
@@ -244,11 +245,13 @@ class BlockManager {
     logger.debug(`[BlockManager] setLastBlock() ${getStringBlock(block)}`);
   }
 
-  /**
-   * Find commonAncestor between RPC is the local cache.
-   * This methods compare blocks between cache and RPC until it finds a matching block.
-   * It return the matching block
-   */
+   /**
+    * Find commonAncestor between RPC is the local cache.
+    * This methods compare blocks between cache and RPC until it finds a matching block.
+    * It return the matching block
+    * This methods compares blocks between cache and RPC until it finds a matching block.
+    * It return the matching block.
+    */
   private async findCommonAncestor(
     rec: number = 0
   ): Promise<BlockManager.ErrorOrCommonAncestor> {
@@ -332,9 +335,9 @@ class BlockManager {
   }
 
   /**
-   * Establish a valid chain with last block = newBlock.number
-   * return found commonAncestor
-   */
+   * Establish a valid chain with last block = newBlock.number.
+   * 
+   * Returns found commonAncestor.   */
   private async handleReorg(
     newBlock: BlockManager.Block
   ): Promise<BlockManager.ErrorOrReorg> {
@@ -394,17 +397,16 @@ class BlockManager {
 
     return { error: undefined, ok: commonAncestor! };
   }
-
-  /*
-   * queryLogs function try to get logs between fromBlock (excluded) to toBlock (included). This
-   * function handle retry and reorg. The function expect that all blocks between fromBlock and toBlock
-   * included are available in this.blocksByNumber
+   /**
    *
-   */
+   * queryLogs function tries to get logs between fromBlock (excluded) to toBlock (included). This
+   * function handles retry and reorg. The function expect that all blocks between fromBlock and toBlock
+   * included are available in this.blocksByNumber.
+   **/
   private async queryLogs(
     fromBlock: BlockManager.Block,
     toBlock: BlockManager.Block,
-    rec: number,
+    rec = 0,
     commonAncestor?: BlockManager.Block
   ): Promise<BlockManager.ErrorOrLogsWithCommonAncestor> {
     logger.debug(
@@ -441,7 +443,7 @@ class BlockManager {
 
     const logs = ok!;
 
-    /* DIRTY: if we detected a reorg we already repoplate the chain until toBlock.number */
+    /* DIRTY: if we detected a reorg we already repopulate the chain until toBlock.number */
     if (!commonAncestor) {
       this.setLastBlock(toBlock);
     }
@@ -450,7 +452,7 @@ class BlockManager {
       const block = this.blocksByNumber[log.blockNumber]; // TODO: verify that block exists
       /* check if queried log comes from a known block in our cache */
       if (block.hash !== log.blockHash) {
-        /* queried log comes from a block we don't know we detected a reorg */
+        /* queried log comes from a block we don't know => we detected a reorg */
         const { error: reorgError, ok: _commonAncestor } =
           await this.handleReorg(toBlock);
 
@@ -593,7 +595,7 @@ class BlockManager {
         return { error: undefined, ok: { logs: [], rollback: undefined } };
       }
 
-      await this.handleSubscribersInitialize(newBlock); // should probably pass new block here
+      await this.handleSubscribersInitialize(newBlock);
 
       if (newBlock.parentHash !== this.lastBlock!.hash) {
         /* newBlock is not successor of this.lastBlock a reorg has been detected */
@@ -670,7 +672,6 @@ class BlockManager {
         const { error: queryLogsError, ok: okQueryLogs } = await this.queryLogs(
           this.lastBlock!,
           newBlock,
-          0
         );
 
         if (queryLogsError) {
