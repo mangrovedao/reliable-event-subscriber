@@ -8,7 +8,7 @@ namespace LogSubscriber {
     | "FailedInitialize"
     | "FailedHandleLog";
 
-  export type InitialzeErrorOrBlock = Result<
+  export type InitializeErrorOrBlock = Result<
     BlockManager.BlockWithoutParentHash,
     Error
   >;
@@ -34,7 +34,7 @@ abstract class LogSubscriber<ParsedEvent> {
    */
   abstract initialize(
     block: BlockManager.BlockWithoutParentHash
-  ): Promise<LogSubscriber.InitialzeErrorOrBlock>;
+  ): Promise<LogSubscriber.InitializeErrorOrBlock>;
   /**
    * handle log
    */

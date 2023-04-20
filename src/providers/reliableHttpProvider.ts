@@ -13,7 +13,7 @@ class ReliableHttpProvider extends ReliableProvider {
   private shouldStop: boolean = false;
   private mutex: Mutex = new Mutex();
 
-  private lastKnownBlockNumber: number = -2;
+  private lastKnownBlockNumber: number = -2; // -2 means that we are currently initializing so we should query block 'latest'
   private timeoutId: NodeJS.Timeout | undefined;
 
   constructor(
@@ -41,22 +41,26 @@ class ReliableHttpProvider extends ReliableProvider {
       try {
         const blockHeader: Block = await this.options.provider.getBlock(
           "latest"
-        ); //TODO: not optimal should think something better
+        ); 
 
         if (this.lastKnownBlockNumber !== -2) {
+          /* if ReliableHttpProvider is already initialized then fetch all blocks between this.lastKnownBlockNumber and blockHeader.number */
           const blockPromises = [];
 
           for (let i = this.lastKnownBlockNumber; i < blockHeader.number; ++i) {
             blockPromises.push(this.options.provider.getBlock(i));
           }
 
-          const blocks = await Promise.all(blockPromises);
+          const blocks = await Promise.allSettled(blockPromises);
 
           for (const block of blocks) {
+            if (block.status === "rejected") {
+              continue;
+            }
             await this.blockManager.handleBlock({
-              parentHash: block.parentHash,
-              hash: block.hash,
-              number: block.number,
+              parentHash: block.value.parentHash,
+              hash: block.value.hash,
+              number: block.value.number,
             });
           }
         }
@@ -68,8 +72,11 @@ class ReliableHttpProvider extends ReliableProvider {
           hash: blockHeader.hash,
           number: blockHeader.number,
         });
-      } catch (e) {}
+      } catch (e) {
+        logger.error('failed handling block', e);
+      }
 
+      /* we could write a smarter algoritm which try to be as close as possible with blockChain block production rate */
       this.timeoutId = setTimeout(
         this.getLatestBlock.bind(this),
         this.httpOptions.estimatedBlockTimeMs
@@ -82,6 +89,7 @@ class ReliableHttpProvider extends ReliableProvider {
     this.shouldStop = true;
     clearTimeout(this.timeoutId);
     this.timeoutId = undefined;
+    this.lastKnownBlockNumber = -2;
   }
 }
 
