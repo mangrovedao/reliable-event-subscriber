@@ -102,10 +102,7 @@ class MockSubscriber extends StateLogSubScriber<string, any> {
 
     return {
       error: undefined,
-      ok: {
-        block: block.block,
-        state: block.state[this.address],
-      },
+      ok: block.state[this.address],
     };
   }
 
@@ -619,11 +616,11 @@ describe("Block Manager", () => {
       );
 
       assert.equal(
-        subscriber1.getLatestState().state,
+        subscriber1.getLatestState(),
         blockChain1[1].state[subscriber1.address]
       );
       assert.equal(
-        subscriber2.getLatestState().state,
+        subscriber2.getLatestState(),
         blockChain1[1].state[subscriber2.address]
       );
     });
@@ -658,15 +655,15 @@ describe("Block Manager", () => {
       await blockManager.handleBlock(blockChain1[2].block);
 
       assert.equal(
-        subscriber1.getLatestState().state,
+        subscriber1.getLatestState(),
         blockChain1[2].state[subscriber1.address]
       );
       assert.equal(
-        subscriber1.getLatestState().state,
+        subscriber1.getLatestState(),
         blockChain1[2].state[subscriber1.address]
       );
       assert.equal(
-        subscriber2.getLatestState().state,
+        subscriber2.getLatestState(),
         blockChain1[2].state[subscriber2.address]
       );
     });
@@ -707,15 +704,15 @@ describe("Block Manager", () => {
       await blockManager.handleBlock(blockChain2[2].block);
 
       assert.equal(
-        subscriber1.getLatestState().state,
+        subscriber1.getLatestState(),
         blockChain2[2].state[subscriber1.address]
       );
       assert.equal(
-        subscriber1.getLatestState().state,
+        subscriber1.getLatestState(),
         blockChain2[2].state[subscriber1.address]
       );
       assert.equal(
-        subscriber2.getLatestState().state,
+        subscriber2.getLatestState(),
         blockChain2[2].state[subscriber2.address]
       );
     });
@@ -750,15 +747,15 @@ describe("Block Manager", () => {
       await blockManager.handleBlock(blockChain1[2].block);
 
       assert.equal(
-        subscriber1.getLatestState().state,
+        subscriber1.getLatestState(),
         blockChain1[2].state[subscriber1.address]
       );
       assert.equal(
-        subscriber1.getLatestState().state,
+        subscriber1.getLatestState(),
         blockChain1[2].state[subscriber1.address]
       );
       assert.equal(
-        subscriber2.getLatestState().state,
+        subscriber2.getLatestState(),
         blockChain1[2].state[subscriber2.address]
       );
     });
@@ -848,11 +845,11 @@ describe("Block Manager", () => {
       await blockManager.handleBlock(blockChain2[2].block);
 
       assert.equal(
-        subscriber1.getLatestState().state,
+        subscriber1.getLatestState(),
         blockChain2[2].state[subscriber1.address]
       );
       assert.equal(
-        subscriber2.getLatestState().state,
+        subscriber2.getLatestState(),
         blockChain2[2].state[subscriber2.address]
       );
     });
@@ -895,11 +892,11 @@ describe("Block Manager", () => {
       await blockManager.handleBlock(blockChain2[4].block);
 
       assert.equal(
-        subscriber1.getLatestState().state,
+        subscriber1.getLatestState(),
         blockChain2[4].state[subscriber1.address]
       );
       assert.equal(
-        subscriber2.getLatestState().state,
+        subscriber2.getLatestState(),
         blockChain2[4].state[subscriber2.address]
       );
     });
@@ -942,11 +939,11 @@ describe("Block Manager", () => {
       await blockManager.handleBlock(blockChain2[3].block);
 
       assert.equal(
-        subscriber1.getLatestState().state,
+        subscriber1.getLatestState(),
         blockChain2[3].state[subscriber1.address]
       );
       assert.equal(
-        subscriber2.getLatestState().state,
+        subscriber2.getLatestState(),
         blockChain2[3].state[subscriber2.address]
       );
     });

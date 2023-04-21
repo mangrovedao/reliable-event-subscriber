@@ -5,13 +5,6 @@ import logger from "./util/logger";
 import BlockManager from "./blockManager";
 import LogSubscriber from "./logSubscriber";
 
-namespace StateLogSubscriber {
-  export type StateAndBlock<T> = {
-    block: BlockManager.BlockWithoutParentHash;
-    state: T;
-  };
-}
-
 /**
  * StateLogSubscriber is an abstract implementation of LogSubscriber which keep
  * one state object for each new block found in `handleLog` and store it in cache.
@@ -43,13 +36,10 @@ abstract class StateLogSubscriber<
   }
 
   /* return latest state */
-  public getLatestState(): StateLogSubscriber.StateAndBlock<T> {
+  public getLatestState(): T {
     this.checkIfLastSeenEventBlockExists();
 
-    return {
-      block: this.lastSeenEventBlock!,
-      state: this.stateByBlockNumber[this.lastSeenEventBlock!.number],
-    };
+    return this.stateByBlockNumber[this.lastSeenEventBlock!.number];
   }
 
   /* initialize subscriber by calling stateInitialize */
@@ -68,10 +58,8 @@ abstract class StateLogSubscriber<
       return error;
     }
 
-    const { block, state } = ok;
-
-    this.stateByBlockNumber[block.number] = state;
-    this.lastSeenEventBlock = block;
+    this.stateByBlockNumber[wantedBlock.number] = ok;
+    this.lastSeenEventBlock = wantedBlock;
 
     logger.debug("[StateLogSubscriber] initialize done");
   }

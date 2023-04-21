@@ -11,10 +11,7 @@ namespace LogSubscriber {
   export type InitializeErrorOrBlock = Error | undefined;
 
   export type ErrorOrState<T> = Result<
-    {
-      state: T;
-      block: BlockManager.BlockWithoutParentHash;
-    },
+    T,
     Error
   >;
 }
