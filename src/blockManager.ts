@@ -168,8 +168,12 @@ class BlockManager {
   }
 
   public async getBlock(
-    blockNumber: number
+    blockNumber: number,
+    exclusive: boolean = true,
   ): Promise<BlockManager.Block | undefined> {
+    if (!exclusive) {
+      return this.blocksByNumber[blockNumber];
+    }
     return this.mutex.runExclusive(() => {
       return this.blocksByNumber[blockNumber];
     });

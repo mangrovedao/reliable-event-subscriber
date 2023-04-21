@@ -8,7 +8,7 @@ export function disableLogging(): void {
   loggingEnabled = false;
 }
 
-const logLevel = "info";
+const logLevel = "debug";
 export const logger = createConsoleLogger(() => loggingEnabled, logLevel);
 
 export default logger;
