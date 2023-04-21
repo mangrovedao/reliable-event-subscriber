@@ -8,10 +8,7 @@ namespace LogSubscriber {
     | "FailedInitialize"
     | "FailedHandleLog";
 
-  export type InitializeErrorOrBlock = Result<
-    BlockManager.BlockWithoutParentHash,
-    Error
-  >;
+  export type InitializeErrorOrBlock = Error | undefined;
 
   export type ErrorOrState<T> = Result<
     {

@@ -503,25 +503,16 @@ class BlockManager {
 
     for (const [i, res] of Object.entries(results)) {
       const address = toInitialize[parseInt(i, 10)];
-      if (res.error) {
+      if (res) {
         /* initialize call failed retry later by adding it back to the set */
         this.waitingToBeInitializedSet.add(address);
       } else {
-        if (res.ok.hash !== block.hash) {
-          /* detected reorg during initialization re init later*/
-          this.waitingToBeInitializedSet.add(address);
-          logger.debug(
-            "[BlockManager] detected reorg when initialize subscriber"
-          );
-          continue;
-        }
-
         const subscriber = this.subscribersByAddress[address];
-        subscriber.initializedAt = res.ok;
-        subscriber.lastSeenEventBlock = res.ok;
+        subscriber.initializedAt = block;
+        subscriber.lastSeenEventBlock = block;
         logger.debug(
           `[BlockManager] subscriberInitialize() ${address} ${getStringBlock(
-            res.ok
+            block
           )}`
         );
       }

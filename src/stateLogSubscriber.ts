@@ -65,7 +65,7 @@ abstract class StateLogSubscriber<
 
     if (error) {
       logger.debug(`[StateLogSubscriber] initialize() failed ${error}`);
-      return { error, ok: undefined };
+      return error;
     }
 
     const { block, state } = ok;
@@ -74,8 +74,6 @@ abstract class StateLogSubscriber<
     this.lastSeenEventBlock = block;
 
     logger.debug("[StateLogSubscriber] initialize done");
-
-    return { error: undefined, ok: block };
   }
 
   /** create a new state with the applied `log` and return it, no copy should be made.
