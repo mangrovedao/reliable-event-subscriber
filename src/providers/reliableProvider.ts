@@ -26,7 +26,9 @@ abstract class ReliableProvider {
 
   private inProcess: boolean = false;
 
-  constructor(protected options: ReliableProvider.Options) {
+  constructor(
+    protected options: ReliableProvider.Options,
+  ) {
     this.blockManager = new BlockManager({
       maxBlockCached: options.maxBlockCached,
       getBlock: this.getBlock.bind(this),
@@ -72,7 +74,7 @@ abstract class ReliableProvider {
     this.inProcess = false;
   }
 
-  private async getBlock(number: number): Promise<BlockManager.ErrorOrBlock> {
+  protected async getBlock(number: number): Promise<BlockManager.ErrorOrBlock> {
     try {
       const block = await this.options.provider.getBlock(number);
       return {
@@ -88,7 +90,7 @@ abstract class ReliableProvider {
     }
   }
 
-  private async getLogs(
+  protected async getLogs(
     from: number,
     to: number,
     addressesAndTopics: BlockManager.AddressAndTopics[]

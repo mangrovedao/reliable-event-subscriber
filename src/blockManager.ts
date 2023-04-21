@@ -532,6 +532,7 @@ class BlockManager {
       log.address = checksumAddress; // DIRTY: Maybe do it at the RPC level ?
 
       const subscriber = this.subscribersByAddress[checksumAddress];
+      if (!subscriber) continue;
       await subscriber.handleLog(log); // await log one by one to insure consitent state between listener
       logger.debug(
         `[BlockManager] handleLog() ${log.address} (${log.blockHash}, ${log.blockNumber})`

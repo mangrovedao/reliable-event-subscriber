@@ -1,0 +1,66 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+//
+// model Block {
+//   id            Int             @id @default(autoincrement())
+//   hash          String          @unique
+//   parentHash    String          @unique
+//   number        Int
+//   UserBalance   UserBalance[]
+//   TransferEvent TransferEvent[]
+// }
+
+model BlockStream {
+  id            Int             @id @default(autoincrement())
+  block String
+  hash          String          @unique
+  parentHash    String
+  number        Int
+}
+
+model GetBlock {
+  id            Int             @id @default(autoincrement())
+  wantedNumber Int
+  block String?
+  error String?
+}
+
+model GetLogs {
+  id            Int             @id @default(autoincrement())
+  from Int
+  to Int
+  logs String?
+  error String?
+}
+
+// model UserBalance {
+//   id Int @id @default(autoincrement())
+//
+//   address String
+//   value   Int
+//
+//   deleted Boolean
+//
+//   block   Block @relation(fields: [blockId], references: [id])
+//   blockId Int
+// }
+//
+// model TransferEvent {
+//   id Int @id @default(autoincrement())
+//
+//   from  String
+//   to    String
+//   value Int
+//
+//   block   Block @relation(fields: [blockId], references: [id])
+//   blockId Int
+// }
