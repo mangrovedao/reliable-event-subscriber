@@ -629,8 +629,7 @@ class BlockManager {
 
       await this.applyLogs(okLogs.logs);
 
-    } while ((newBlock!.number - this.options.maxBlockCached - 2) > this.lastBlock!.number);
-
+    } while ((newBlock!.number - this.options.maxBlockCached ) > this.lastBlock!.number);
 
     const blocksPromises = [];
     for (let i = this.lastBlock!.number + 1 ; i < newBlock.number ; ++i) {

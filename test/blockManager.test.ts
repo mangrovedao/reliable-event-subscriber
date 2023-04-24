@@ -186,6 +186,58 @@ describe("Block Manager", () => {
         [addressSubscriber2]: "sub2-0x1-0x3",
       },
     },
+    4: {
+      block: {
+        parentHash: "0x3",
+        hash: "0x4",
+        number: 4,
+      },
+      logs: [
+      ],
+      state: {
+        [addressSubscriber1]: "sub1-0x1-0x2-0x2-0x3",
+        [addressSubscriber2]: "sub2-0x1-0x3",
+      },
+    },
+    5: {
+      block: {
+        parentHash: "0x4",
+        hash: "0x5",
+        number: 5,
+      },
+      logs: [
+      ],
+      state: {
+        [addressSubscriber1]: "sub1-0x1-0x2-0x2-0x3",
+        [addressSubscriber2]: "sub2-0x1-0x3",
+      },
+    },
+    6: {
+      block: {
+        parentHash: "0x5",
+        hash: "0x6",
+        number: 6,
+      },
+      logs: [
+      ],
+      state: {
+        [addressSubscriber1]: "sub1-0x1-0x2-0x2-0x3",
+        [addressSubscriber2]: "sub2-0x1-0x3",
+      },
+    },
+    7: {
+      block: {
+        parentHash: "0x6",
+        hash: "0x7",
+        number: 7,
+      },
+      logs: [
+      ],
+      state: {
+        [addressSubscriber1]: "sub1-0x1-0x2-0x2-0x3",
+        [addressSubscriber2]: "sub2-0x1-0x3",
+      },
+    },
   };
 
   const blockChain2: Record<number, BlockLogsState> = {
@@ -584,6 +636,33 @@ describe("Block Manager", () => {
       assert.equal(error, undefined);
       assert.deepEqual(rollback, blockChain2[1].block);
       assert.deepEqual(logs, []);
+    });
+
+    it("Batch querying block", async () => {
+      const mockRpc = new MockRpc(blockChain1);
+
+      const blockManager = new BlockManager({
+        maxBlockCached: 4,
+        getBlock: mockRpc.getBlock.bind(mockRpc),
+        getLogs: mockRpc.getLogs.bind(mockRpc),
+        maxRetryGetBlock: 5,
+        retryDelayGetBlockMs: 200,
+        maxRetryGetLogs: 5,
+        retryDelayGetLogsMs: 200,
+      });
+
+      await blockManager.initialize(blockChain1[1].block);
+
+      const { error, ok } = await blockManager.handleBlock(
+        blockChain1[7].block
+      );
+
+      const { logs, rollback } = ok!;
+
+      assert.equal(error, undefined);
+      assert.equal(rollback, undefined);
+      assert.notEqual(logs, undefined);
+      assert.equal(logs!.length, 0);
     });
   });
 
