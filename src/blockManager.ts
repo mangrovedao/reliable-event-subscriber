@@ -480,7 +480,10 @@ class BlockManager {
           };
         }
         /* Our cache is consistent again we retry queryLogs */
-        return this.queryLogs(fromBlock, toBlock, rec + 1, { commonAncestor: _commonAncestor });
+        return this.queryLogs(fromBlock, toBlock, rec + 1, { 
+          commonAncestor: _commonAncestor,  
+          verifyLogs: options.verifyLogs,
+        });
       }
     }
 
@@ -704,6 +707,7 @@ class BlockManager {
         newBlock,
         0,
         {
+          verifyLogs: true,
           commonAncestor: reorgAncestor!,
         }
       );
@@ -751,6 +755,10 @@ class BlockManager {
       const { error: queryLogsError, ok: okQueryLogs } = await this.queryLogs(
         this.lastBlock!,
         newBlock,
+        0,
+        {
+          verifyLogs: true,
+        }
       );
 
       if (queryLogsError) {

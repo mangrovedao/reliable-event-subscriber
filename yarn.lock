@@ -235,6 +235,11 @@
   resolved "https://registry.yarnpkg.com/@eslint/js/-/js-8.38.0.tgz#73a8a0d8aa8a8e6fe270431c5e72ae91b5337892"
   integrity sha512-IoD2MfUnOV58ghIHCiil01PcohxjbYR/qCxsoC+xNgUwh1EY8jOOrYmu3d3a71+tJJ23uscEV4X2HJWMsPJu4g==
 
+"@espendk/json-file-reporter@^1.4.2":
+  version "1.4.2"
+  resolved "https://registry.yarnpkg.com/@espendk/json-file-reporter/-/json-file-reporter-1.4.2.tgz#92df23936e426c0d68873b7d81f5dd51ed6802f6"
+  integrity sha512-K8BEI2oAgB0zIWxg+7oIPvbCAzmv+suu4wKmC47E76TD515H69pVQTiJd2pF6plOqjHzdid7ENCSPaKGguNUlQ==
+
 "@ethersproject/abi@5.7.0", "@ethersproject/abi@^5.7.0":
   version "5.7.0"
   resolved "https://registry.yarnpkg.com/@ethersproject/abi/-/abi-5.7.0.tgz#b3f3e045bbbeed1af3947335c247ad625a44e449"
