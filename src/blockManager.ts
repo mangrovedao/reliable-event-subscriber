@@ -606,6 +606,9 @@ class BlockManager {
           from
         )}) to (${getStringBlock(to)})`,
       );
+      logger.debug(
+      `[BlockManager] handleBatchBlock() still  ${newBlock.number - from.number} blocks`,
+      );
 
       const { error: queryLogsError, ok: okLogs } = await this.queryLogs(
         from,
