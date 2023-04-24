@@ -96,6 +96,14 @@ namespace BlockManager {
      * Delay between every getLogs retry
      */
     retryDelayGetLogsMs: number;
+    /**
+      * Finality is the depth in which we assume that block will never be reorged 
+      */
+    blockFinality: number;
+    /**
+      * Batch block size
+      */
+    batchSize: number;
   };
 
   export type AddressAndTopics = {
@@ -598,7 +606,18 @@ class BlockManager {
       )})`
     );
     do {
-      let { error, ok } = await this.options.getBlock(from.number + this.options.maxBlockCached);
+      const countBlocksLeft = newBlock.number - from.number;
+      logger.debug(
+      `[BlockManager] handleBatchBlock() still  ${countBlocksLeft} blocks`,
+      );
+
+
+      let batchSize = this.options.batchSize;
+      if ((this.options.batchSize + this.options.blockFinality) > countBlocksLeft) {
+        batchSize = countBlocksLeft - this.options.blockFinality;
+      }
+
+      let { error, ok } = await this.options.getBlock(from.number + batchSize);
       if (error) {
         return { error, ok: undefined};
       }
@@ -608,9 +627,6 @@ class BlockManager {
         `[BlockManager] handleBatchBlock() from (${getStringBlock(
           from
         )}) to (${getStringBlock(to)})`,
-      );
-      logger.debug(
-      `[BlockManager] handleBatchBlock() still  ${newBlock.number - from.number} blocks`,
       );
 
       const { error: queryLogsError, ok: okLogs } = await this.queryLogs(
@@ -629,7 +645,11 @@ class BlockManager {
 
       await this.applyLogs(okLogs.logs);
 
-    } while ((newBlock!.number - this.options.maxBlockCached ) > this.lastBlock!.number);
+    } while ((newBlock!.number - this.options.batchSize) > this.lastBlock!.number);
+
+    logger.debug(
+    `[BlockManager] handleBatchBlock() with finality  ${newBlock.number - this.lastBlock!.number} blocks`,
+    );
 
     const blocksPromises = [];
     for (let i = this.lastBlock!.number + 1 ; i < newBlock.number ; ++i) {

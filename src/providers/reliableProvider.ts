@@ -37,6 +37,8 @@ abstract class ReliableProvider {
       retryDelayGetBlockMs: options.maxRetryGetBlock,
       maxRetryGetLogs: options.maxRetryGetLogs,
       retryDelayGetLogsMs: options.retryDelayGetLogsMs,
+      blockFinality: options.blockFinality,
+      batchSize: options.batchSize,
     });
   }
 
