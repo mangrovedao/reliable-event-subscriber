@@ -3,9 +3,10 @@ import ethers, { Contract } from 'ethers';
 dotenv.config();
 
 const rpcWsUrl = process.env.RPC_WS!;
+const rpcHttpUrl = process.env.RPC_HTTP!;
 
 import { PrismaClient } from '@prisma/client'
-import { Log, WebSocketProvider } from "@ethersproject/providers";
+import { Log, JsonRpcProvider } from "@ethersproject/providers";
 import { BlockManager, LogSubscriber, ReliableProvider, ReliableWebsocketProvider } from '../src';
 import { LogDescription, hexlify } from 'ethers/lib/utils';
 import ERC20ABI from './abi/erc20.abi.json';
@@ -17,7 +18,7 @@ enableLogging();
 
 const prisma = new PrismaClient()
 
-const provider = new WebSocketProvider(rpcWsUrl);
+const provider = new JsonRpcProvider(rpcHttpUrl);
 
 type TransferEvent = {
   from: string;
@@ -99,7 +100,7 @@ class DbReliableProvider extends ReliableWebsocketProvider {
           {
             fromBlock,
             toBlock,
-            // address: addressesAndTopics.map((addr) => addr.address),
+            address: addressesAndTopics.map((addr) => addr.address),
           },
         ]);
 
@@ -150,12 +151,14 @@ class DbReliableProvider extends ReliableWebsocketProvider {
 
 const reliableProvider = new DbReliableProvider(
   {
-    maxBlockCached: 500,
+    maxBlockCached: 10,
     maxRetryGetBlock: 10,
     retryDelayGetBlockMs: 200,
     maxRetryGetLogs: 10,
     retryDelayGetLogsMs: 200,
     provider,
+    blockFinality: 5,
+    batchSize: 25,
   },
   {
     wsUrl: rpcWsUrl,
@@ -224,10 +227,9 @@ class DbStorer extends LogSubscriber<TransferEvent> {
 
 const main = async() => {
   const block = await provider.getBlock('latest');
+  const block1 = await provider.getBlock(block.number - 100);
 
-  console.log(block);
-
-  await reliableProvider.initialize(block);
+  await reliableProvider.initialize(block1);
 
   const sub = new DbStorer();
 
