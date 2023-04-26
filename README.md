@@ -1,3 +1,3 @@
-[![CI](https://github.com/mangrovedao/mangrove-ts/actions/workflows/node.js.yml/badge.svg)]
+[![CI](https://github.com/mangrovedao/reliable-event-subscriber/actions/workflows/ci.yml/badge.svg)](https://github.com/mangrovedao/reliable-event-subscriber/actions/workflows/ci.yml)
 
 This repo implements a reliable EVM event subscriber.
