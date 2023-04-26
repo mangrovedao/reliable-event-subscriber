@@ -202,7 +202,7 @@ class BlockManager {
    * Initialize the BlockManager cache with block
    */
   public async initialize(block: BlockManager.Block) {
-    logger.debug(`[BlockManager] initialize() ${getStringBlock(block)}`);
+    logger.info(`[BlockManager] initialize() ${getStringBlock(block)}`);
     this.lastBlock = block;
 
     this.blocksByNumber = {};
@@ -354,7 +354,7 @@ class BlockManager {
     let { error, ok: commonAncestor } = await this.findCommonAncestor();
 
     if (error) {
-      logger.debug(`[BlockManager] handleReorg(): failure ${error}`);
+      logger.error(`[BlockManager] handleReorg(): failure`, error);
       if (error === "NoCommonAncestorFoundInCache") {
         /* we didn't find matching ancestor between our cache and rpc. re-initialize with newBlock */
         await this.initialize(newBlock);
@@ -446,7 +446,7 @@ class BlockManager {
     if (error) {
       /* the rpc might be a bit late, wait retryDelayGetLogsMs to let it catch up */
       await sleep(this.options.retryDelayGetLogsMs);
-      logger.debug(
+      logger.error(
         `[BlockManager] queryLogs(): failure ${error} fromBlock ${getStringBlock(
           fromBlock
         )}, toBlock ${getStringBlock(toBlock)}`
@@ -577,7 +577,7 @@ class BlockManager {
          * it needs to be initialized again.
          **/
         this.waitingToBeInitializedSet.add(address);
-        logger.debug(
+        logger.info(
           `[BlockManager] addToInitializeList() ${address} ${getStringBlock(
             subscriber.initializedAt!
           )} ${getStringBlock(block)}`
@@ -600,14 +600,14 @@ class BlockManager {
     this.checkLastBlockExist();
 
     let from = this.lastBlock!;
-    logger.debug(
+    logger.info(
       `[BlockManager] handleBatchBlock() (${getStringBlock(
         newBlock
       )})`
     );
     do {
       const countBlocksLeft = newBlock.number - from.number;
-      logger.debug(
+      logger.info(
       `[BlockManager] handleBatchBlock() still  ${countBlocksLeft} blocks`,
       );
 
@@ -698,7 +698,7 @@ class BlockManager {
 
     if (newBlock.parentHash !== this.lastBlock!.hash) {
       /* newBlock is not successor of this.lastBlock a reorg has been detected */
-      logger.debug(
+      logger.info(
         `[BlockManager] handleBlock() reorg (last: ${getStringBlock(
           this.lastBlock!
         )}) (new: ${getStringBlock(newBlock)}) `
@@ -768,7 +768,7 @@ class BlockManager {
         },
       };
     } else {
-      logger.debug(
+      logger.info(
         `[BlockManager] handleBlock() normal (${getStringBlock(newBlock)})`
       );
       const { error: queryLogsError, ok: okQueryLogs } = await this.queryLogs(
