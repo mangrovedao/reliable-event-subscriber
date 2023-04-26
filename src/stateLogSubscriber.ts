@@ -54,7 +54,7 @@ abstract class StateLogSubscriber<
     const { error, ok } = await this.stateInitialize(wantedBlock);
 
     if (error) {
-      logger.debug(`[StateLogSubscriber] initialize() failed ${error}`);
+      logger.error(`[StateLogSubscriber] initialize() failed ${error}`);
       return error;
     }
 
