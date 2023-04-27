@@ -79,7 +79,11 @@ class ReliableHttpProvider extends ReliableProvider {
         logger.error('failed handling block', e);
       }
 
-      /* we could write a smarter algoritm which try to be as close as possible with blockChain block production rate */
+      /* re-check that we should not stop before setting a new timeout, the async steps above could be interleaved with other code invoking stop. */
+      if (this.shouldStop) {
+        return;
+      }
+      /* we could write a smarter algorithm which try to be as close as possible with blockChain block production rate */
       this.timeoutId = setTimeout(
         this.getLatestBlock.bind(this),
         this.httpOptions.estimatedBlockTimeMs
