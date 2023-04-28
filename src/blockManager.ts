@@ -584,7 +584,7 @@ class BlockManager {
           '[BlockManager] addToInitializeList()',
           {
             data: {
-              initializeAt: subscriber.initializedAt,
+              initializedAt: subscriber.initializedAt,
               block,
             }
           }
