@@ -129,19 +129,6 @@ namespace BlockManager {
   export type HandleBlockPostHookFunction = () => Promise<void>;
 }
 
-/* transform a block object to a string */
-const getStringBlock = (
-  block: BlockManager.Block | BlockManager.BlockWithoutParentHash
-): string => {
-  if ((block as BlockManager.Block).parentHash) {
-    return `(${(block as BlockManager.Block).parentHash}, ${block.hash}, ${
-      block.number
-    })`;
-  } else {
-    return `(${block.hash}, ${block.number})`;
-  }
-};
-
 /*
  * The BlockManager class is a reliable way of handling chain reorganization.
  */
@@ -202,7 +189,7 @@ class BlockManager {
    * Initialize the BlockManager cache with block
    */
   public async initialize(block: BlockManager.Block) {
-    logger.info(`[BlockManager] initialize() ${getStringBlock(block)}`);
+    logger.info('[BlockManager] initialize()', { data: { block ,}});
     this.lastBlock = block;
 
     this.blocksByNumber = {};
@@ -252,7 +239,7 @@ class BlockManager {
       this.countsBlocksCached--;
     }
 
-    logger.debug(`[BlockManager] setLastBlock() ${getStringBlock(block)}`);
+    logger.debug(`[BlockManager] setLastBlock()`, { data: block });
   }
 
    /**
@@ -376,9 +363,12 @@ class BlockManager {
     }
 
     logger.debug(
-      `[BlockManager] handleReorg(): commonAncestor ${getStringBlock(
-        commonAncestor!
-      )}`
+      '[BlockManager] handleReorg(): commonAncestor',
+      {
+        data: {
+          commonAncestor,
+        }
+      }
     );
 
     /* remove all blocks that has been reorged from cache */
@@ -423,9 +413,13 @@ class BlockManager {
     } = {},
   ): Promise<BlockManager.ErrorOrLogsWithCommonAncestor> {
     logger.debug(
-      `[BlockManager] queryLogs(): fromBlock ${getStringBlock(
-        fromBlock
-      )}, toBlock ${getStringBlock(toBlock)}`
+      '[BlockManager] queryLogs()',
+      {
+        data: {
+          fromBlock,
+          toBlock,
+        }
+      }
     );
     if (rec > this.options.maxRetryGetLogs) {
       return {
@@ -447,9 +441,14 @@ class BlockManager {
       /* the rpc might be a bit late, wait retryDelayGetLogsMs to let it catch up */
       await sleep(this.options.retryDelayGetLogsMs);
       logger.error(
-        `[BlockManager] queryLogs(): failure ${error} fromBlock ${getStringBlock(
-          fromBlock
-        )}, toBlock ${getStringBlock(toBlock)}`
+        '[BlockManager] queryLogs(): failure',
+        {
+          data: {
+            error,
+            fromBlock,
+            toBlock,
+          }
+        }
       );
       return this.queryLogs(fromBlock, toBlock, rec + 1);
     }
@@ -535,9 +534,13 @@ class BlockManager {
         subscriber.initializedAt = block;
         subscriber.lastSeenEventBlock = block;
         logger.debug(
-          `[BlockManager] subscriberInitialize() ${address} ${getStringBlock(
-            block
-          )}`
+          '[BlockManager] subscriberInitialize()',
+          {
+            data: {
+              address,
+              block,
+            }
+          }
         );
       }
     }
@@ -578,17 +581,27 @@ class BlockManager {
          **/
         this.waitingToBeInitializedSet.add(address);
         logger.info(
-          `[BlockManager] addToInitializeList() ${address} ${getStringBlock(
-            subscriber.initializedAt!
-          )} ${getStringBlock(block)}`
+          '[BlockManager] addToInitializeList()',
+          {
+            data: {
+              initializedAt: subscriber.initializedAt,
+              block,
+            }
+          }
         );
       } else if (
         subscriber.lastSeenEventBlock &&
         subscriber.lastSeenEventBlock.number > block.number
       ) {
         subscriber.rollback(block);
-        logger.debug(
-          `[BlockManager] rollback() ${address} ${getStringBlock(block)}`
+        logger.info(
+          '[BlockManager] rollback()',
+          {
+            data: {
+              address,
+              block,
+            }
+          }
         );
       }
     }
@@ -601,9 +614,7 @@ class BlockManager {
 
     let from = this.lastBlock!;
     logger.info(
-      `[BlockManager] handleBatchBlock() (${getStringBlock(
-        newBlock
-      )})`
+      `[BlockManager] handleBatchBlock()`, { data: newBlock },
     );
     do {
       const countBlocksLeft = newBlock.number - from.number;
@@ -624,9 +635,13 @@ class BlockManager {
 
       let to = ok!;
       logger.debug(
-        `[BlockManager] handleBatchBlock() from (${getStringBlock(
-          from
-        )}) to (${getStringBlock(to)})`,
+        '[BlockManager] handleBatchBlock()',
+        {
+          data: {
+            from,
+            to,
+          }
+        }
       );
 
       const { error: queryLogsError, ok: okLogs } = await this.queryLogs(
@@ -683,9 +698,8 @@ class BlockManager {
     if (cachedBlock && cachedBlock.hash === newBlock.hash) {
       /* newBlock is already stored in cache bail out*/
       logger.debug(
-        `[BlockManager] handleBlock() block already in cache, ignoring... (${getStringBlock(
-          newBlock
-        )})`
+        '[BlockManager] handleBlock() block already in cache, ignoring...',
+        { data: newBlock, },
       );
       return { error: undefined, ok: { logs: [], rollback: undefined } };
     }
@@ -699,9 +713,13 @@ class BlockManager {
     if (newBlock.parentHash !== this.lastBlock!.hash) {
       /* newBlock is not successor of this.lastBlock a reorg has been detected */
       logger.info(
-        `[BlockManager] handleBlock() reorg (last: ${getStringBlock(
-          this.lastBlock!
-        )}) (new: ${getStringBlock(newBlock)}) `
+        '[BlockManager] handleBlock() reorg',
+        {
+          data: {
+            last: this.lastBlock,
+            newBlock: newBlock,
+          }
+        }
       );
 
       const { error: reorgError, ok: reorgAncestor } = await this.handleReorg(
@@ -768,8 +786,9 @@ class BlockManager {
         },
       };
     } else {
-      logger.info(
-        `[BlockManager] handleBlock() normal (${getStringBlock(newBlock)})`
+      logger.debug(
+        `[BlockManager] handleBlock() normal`, 
+        { data: newBlock },
       );
       const { error: queryLogsError, ok: okQueryLogs } = await this.queryLogs(
         this.lastBlock!,
