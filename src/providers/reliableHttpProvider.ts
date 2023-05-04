@@ -122,8 +122,6 @@ class ReliableHttpProvider extends ReliableProvider {
         logger.error('failed handling block', e);
       }
 
-      await sleep(10000);
-
       /* we could write a smarter algoritm which try to be as close as possible with blockChain block production rate */
       this.timeoutId = setTimeout(
         this.getLatestBlock.bind(this),
