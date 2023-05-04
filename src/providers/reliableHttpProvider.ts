@@ -62,6 +62,10 @@ class ReliableHttpProvider extends ReliableProvider {
 
     const blocks: BlockManager.Block[] = results.returnData.map((res: any, index: number) => {
       if (index === 0) {
+        /**
+          * Tricks: I fetched all blocks between from (included) and to (not included)
+          * so that I can have the parentHash of from + 1 
+          */
         return {
           parentHash: '',
           blockHash: '',
@@ -75,7 +79,7 @@ class ReliableHttpProvider extends ReliableProvider {
       };
     });
 
-    blocks.shift();
+    blocks.shift(); // removing from block
     return blocks;
   }
 
