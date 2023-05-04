@@ -20,6 +20,8 @@ namespace BlockManager {
 
   export type ErrorOrBlock = Result<Block, BlockError>;
 
+  export type ErrorOrBlocks = Result<Block[], BlockError>;
+
   export type MaxRetryError = "MaxRetryReach";
 
   type CommonAncestorError = "NoCommonAncestorFoundInCache" | "FailedGetBlock";
@@ -117,6 +119,10 @@ namespace BlockManager {
      */
     getBlock: (number: number) => Promise<ErrorOrBlock>;
     /**
+     *  getBlocksBatch return blocks with blockNumber between `from` (excluded) and `to` (excluded)
+     */
+    getBlocksBatch: (from: number, to: number) => Promise<ErrorOrBlocks>;
+    /**
      *  getLogs return emitted logs by `addresses` between from (included) and to (included),
      */
     getLogs: (
@@ -128,6 +134,8 @@ namespace BlockManager {
 
   export type HandleBlockPostHookFunction = () => Promise<void>;
 }
+
+const BatchSizeRepopulate = 500;
 
 /*
  * The BlockManager class is a reliable way of handling chain reorganization.
@@ -263,19 +271,28 @@ class BlockManager {
       };
     }
 
+    const rpcBlocks = await this.options.getBlocksBatch(
+      this.lastBlock!.number - BatchSizeRepopulate,
+      this.lastBlock!.number + 1,
+    );
+
+    if (rpcBlocks.error) {
+      await sleep(this.options.retryDelayGetBlockMs);
+      return this.findCommonAncestor(rec + 1);
+    }
+
+    const blocks = rpcBlocks.ok!;
     for (let i = 0; i < this.countsBlocksCached; ++i) {
       const currentBlockNumber = this.lastBlock!.number - i;
 
-      const fetchedBlock = await this.options.getBlock(currentBlockNumber);
-
-      if (fetchedBlock.error) {
-        await sleep(this.options.retryDelayGetBlockMs);
-        return this.findCommonAncestor(rec + 1);
-      }
+      const fetchedBlock = blocks[blocks.length - 1 - i];
 
       const cachedBlock = this.blocksByNumber[currentBlockNumber];
-      if (fetchedBlock.ok.hash === cachedBlock.hash) {
-        return { error: undefined, ok: cachedBlock };
+      if (fetchedBlock.hash === cachedBlock.hash) {
+        return { 
+          error: undefined, 
+          ok: cachedBlock,
+        }
       }
     }
 
@@ -306,15 +323,16 @@ class BlockManager {
       blocksPromises.push(this.options.getBlock(i));
     }
 
-    const errorsOrBlocks = await Promise.all(blocksPromises);
+    const blocks = await this.options.getBlocksBatch(this.lastBlock!.number, newBlock.number + 1);
 
-    for (const errorOrBlock of errorsOrBlocks.values()) {
-      if (errorOrBlock.error) {
-        return { error: "BlockNotFound" };
-      }
+    if (blocks.error) {
+      return this.populateValidChainUntilBlock(newBlock, rec + 1);
+    }
 
+    const _blocks = blocks.ok!;
+    for (const block of _blocks) {
       /* check that queried block is chaining with lastBlock  */
-      if (this.lastBlock!.hash != errorOrBlock.ok.parentHash) {
+      if (this.lastBlock!.hash != block.parentHash) {
         /* TODO: this.lastBlock.hash could have been reorg ? */
 
         /* the getBlock might fail for some reason, wait retryDelayGetBlockMs to let it catch up*/
@@ -324,7 +342,7 @@ class BlockManager {
         return await this.populateValidChainUntilBlock(newBlock, rec + 1);
       } else {
         /* queried block is the successor of this.lastBlock add it to the cache */
-        this.setLastBlock(errorOrBlock.ok);
+        this.setLastBlock(block);
       }
     }
 
@@ -380,20 +398,7 @@ class BlockManager {
     /* commonAncestor is the new cache latest block */
     this.lastBlock = commonAncestor;
 
-    /* reconstruct a valid chain from the latest block to newBlock.number */
-    const { error: repopulateError } = await this.populateValidChainUntilBlock(
-      newBlock
-    );
-
-    if (repopulateError) {
-      /* populateValidChainUntilBlock did not succeed, bail out */
-      return {
-        error: {
-          error: repopulateError,
-        },
-        ok: undefined,
-      };
-    }
+    await this.populateValidChainUntilBlock(newBlock);
 
     return { error: undefined, ok: commonAncestor! };
   }

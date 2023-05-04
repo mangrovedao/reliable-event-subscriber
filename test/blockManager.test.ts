@@ -1,3 +1,6 @@
+import * as dotenv from 'dotenv'; 
+dotenv.config();
+
 import assert from "assert";
 import { describe, it } from "mocha";
 import { enableLogging } from "../src/util/logger";
@@ -28,6 +31,25 @@ class MockRpc {
     return { error: undefined, ok: block.block };
   }
 
+  async getBlocksBatch(from: number, to: number): Promise<BlockManager.ErrorOrBlocks> {
+    const blocks: BlockManager.Block[] = [];
+    for (let i = to - 1 ; i > from ; --i) {
+      const block = this.blockByNumber[i];
+      if (!block) {
+        return {
+          error: undefined,
+          ok: blocks.reverse(),
+        }
+      }
+      blocks.push(block.block);
+    }
+
+    return {
+      error: undefined,
+      ok: blocks.reverse(),
+    };
+  }
+
   async getLogs(
     from: number,
     to: number,
@@ -55,6 +77,19 @@ class MockRpc {
       }
 
       return this.getBlock(number);
+    };
+  }
+
+  failingBeforeXCallGetBlocksBatch(
+    x: number
+  ): (from: number, to: number) => Promise<BlockManager.ErrorOrBlocks> {
+    return async (from: number, to: number) => {
+      if (this.countFailingGetBlock !== x) {
+        this.countFailingGetBlock++;
+        return { error: "BlockNotFound", ok: undefined };
+      }
+
+      return this.getBlocksBatch(from, to);
     };
   }
 
@@ -301,6 +336,7 @@ describe("Block Manager", () => {
       const blockManager = new BlockManager({
         maxBlockCached: 50,
         getBlock: mockRpc.getBlock.bind(mockRpc),
+        getBlocksBatch: mockRpc.getBlocksBatch.bind(mockRpc),
         getLogs: mockRpc.getLogs.bind(mockRpc),
         maxRetryGetBlock: 5,
         retryDelayGetBlockMs: 200,
@@ -335,6 +371,7 @@ describe("Block Manager", () => {
       const blockManager = new BlockManager({
         maxBlockCached: 50,
         getBlock: mockRpc.getBlock.bind(mockRpc),
+        getBlocksBatch: mockRpc.getBlocksBatch.bind(mockRpc),
         getLogs: mockRpc.getLogs.bind(mockRpc),
         maxRetryGetBlock: 5,
         retryDelayGetBlockMs: 200,
@@ -368,6 +405,7 @@ describe("Block Manager", () => {
       const blockManager = new BlockManager({
         maxBlockCached: 50,
         getBlock: mockRpc.getBlock.bind(mockRpc),
+        getBlocksBatch: mockRpc.getBlocksBatch.bind(mockRpc),
         getLogs: mockRpc.getLogs.bind(mockRpc),
         maxRetryGetBlock: 5,
         retryDelayGetBlockMs: 200,
@@ -402,6 +440,7 @@ describe("Block Manager", () => {
       const blockManager = new BlockManager({
         maxBlockCached: 50,
         getBlock: mockRpc.getBlock.bind(mockRpc),
+        getBlocksBatch: mockRpc.getBlocksBatch.bind(mockRpc),
         getLogs: mockRpc.getLogs.bind(mockRpc),
         maxRetryGetBlock: 5,
         retryDelayGetBlockMs: 200,
@@ -439,6 +478,7 @@ describe("Block Manager", () => {
       const blockManager = new BlockManager({
         maxBlockCached: 50,
         getBlock: mockRpc.getBlock.bind(mockRpc),
+        getBlocksBatch: mockRpc.getBlocksBatch.bind(mockRpc),
         getLogs: mockRpc.getLogs.bind(mockRpc),
         maxRetryGetBlock: 5,
         retryDelayGetBlockMs: 200,
@@ -470,6 +510,7 @@ describe("Block Manager", () => {
       const blockManager = new BlockManager({
         maxBlockCached: 50,
         getBlock: mockRpc.getBlock.bind(mockRpc),
+        getBlocksBatch: mockRpc.getBlocksBatch.bind(mockRpc),
         getLogs: mockRpc.getLogs.bind(mockRpc),
         maxRetryGetBlock: 5,
         retryDelayGetBlockMs: 200,
@@ -497,6 +538,7 @@ describe("Block Manager", () => {
       const blockManager = new BlockManager({
         maxBlockCached: 50,
         getBlock: mockRpc.getBlock.bind(mockRpc),
+        getBlocksBatch: mockRpc.getBlocksBatch.bind(mockRpc),
         getLogs: mockRpc.failingBeforeXCallGetLogs(3).bind(mockRpc),
         maxRetryGetBlock: 5,
         retryDelayGetBlockMs: 200,
@@ -530,6 +572,7 @@ describe("Block Manager", () => {
       const blockManager = new BlockManager({
         maxBlockCached: 50,
         getBlock: mockRpc.failingBeforeXCallGetBlock(3).bind(mockRpc),
+        getBlocksBatch: mockRpc.failingBeforeXCallGetBlocksBatch(3).bind(mockRpc),
         getLogs: mockRpc.getLogs.bind(mockRpc),
         maxRetryGetBlock: 5,
         retryDelayGetBlockMs: 200,
@@ -563,6 +606,7 @@ describe("Block Manager", () => {
       const blockManager = new BlockManager({
         maxBlockCached: 50,
         getBlock: mockRpc.failingBeforeXCallGetBlock(6).bind(mockRpc),
+        getBlocksBatch: mockRpc.failingBeforeXCallGetBlocksBatch(6).bind(mockRpc),
         getLogs: mockRpc.getLogs.bind(mockRpc),
         maxRetryGetBlock: 5,
         retryDelayGetBlockMs: 200,
@@ -604,6 +648,7 @@ describe("Block Manager", () => {
       const blockManager = new BlockManager({
         maxBlockCached: 50,
         getBlock: mockRpc.getBlock.bind(mockRpc),
+        getBlocksBatch: mockRpc.getBlocksBatch.bind(mockRpc),
         getLogs: mockRpc.getLogs.bind(mockRpc),
         maxRetryGetBlock: 5,
         retryDelayGetBlockMs: 200,
@@ -634,6 +679,7 @@ describe("Block Manager", () => {
       const blockManager = new BlockManager({
         maxBlockCached: 2,
         getBlock: mockRpc.getBlock.bind(mockRpc),
+        getBlocksBatch: mockRpc.getBlocksBatch.bind(mockRpc),
         getLogs: mockRpc.getLogs.bind(mockRpc),
         maxRetryGetBlock: 5,
         retryDelayGetBlockMs: 200,
@@ -666,6 +712,7 @@ describe("Block Manager", () => {
       const blockManager = new BlockManager({
         maxBlockCached: 4,
         getBlock: mockRpc.getBlock.bind(mockRpc),
+        getBlocksBatch: mockRpc.getBlocksBatch.bind(mockRpc),
         getLogs: mockRpc.getLogs.bind(mockRpc),
         maxRetryGetBlock: 5,
         retryDelayGetBlockMs: 200,
@@ -697,6 +744,7 @@ describe("Block Manager", () => {
       const blockManager = new BlockManager({
         maxBlockCached: 50,
         getBlock: mockRpc.getBlock.bind(mockRpc),
+        getBlocksBatch: mockRpc.getBlocksBatch.bind(mockRpc),
         getLogs: mockRpc.getLogs.bind(mockRpc),
         maxRetryGetBlock: 5,
         retryDelayGetBlockMs: 200,
@@ -736,6 +784,7 @@ describe("Block Manager", () => {
       const blockManager = new BlockManager({
         maxBlockCached: 50,
         getBlock: mockRpc.getBlock.bind(mockRpc),
+        getBlocksBatch: mockRpc.getBlocksBatch.bind(mockRpc),
         getLogs: mockRpc.getLogs.bind(mockRpc),
         maxRetryGetBlock: 5,
         retryDelayGetBlockMs: 200,
@@ -781,6 +830,7 @@ describe("Block Manager", () => {
       const blockManager = new BlockManager({
         maxBlockCached: 50,
         getBlock: mockRpc.getBlock.bind(mockRpc),
+        getBlocksBatch: mockRpc.getBlocksBatch.bind(mockRpc),
         getLogs: mockRpc.getLogs.bind(mockRpc),
         maxRetryGetBlock: 5,
         retryDelayGetBlockMs: 200,
@@ -832,6 +882,7 @@ describe("Block Manager", () => {
       const blockManager = new BlockManager({
         maxBlockCached: 50,
         getBlock: mockRpc.getBlock.bind(mockRpc),
+        getBlocksBatch: mockRpc.getBlocksBatch.bind(mockRpc),
         getLogs: mockRpc.getLogs.bind(mockRpc),
         maxRetryGetBlock: 5,
         retryDelayGetBlockMs: 200,
@@ -877,6 +928,7 @@ describe("Block Manager", () => {
       const blockManager = new BlockManager({
         maxBlockCached: 50,
         getBlock: mockRpc.getBlock.bind(mockRpc),
+        getBlocksBatch: mockRpc.getBlocksBatch.bind(mockRpc),
         getLogs: mockRpc.getLogs.bind(mockRpc),
         maxRetryGetBlock: 5,
         retryDelayGetBlockMs: 200,
@@ -928,6 +980,7 @@ describe("Block Manager", () => {
       const blockManager = new BlockManager({
         maxBlockCached: 50,
         getBlock: mockRpc.getBlock.bind(mockRpc),
+        getBlocksBatch: mockRpc.getBlocksBatch.bind(mockRpc),
         getLogs: mockRpc.getLogs.bind(mockRpc),
         maxRetryGetBlock: 5,
         retryDelayGetBlockMs: 200,
@@ -975,6 +1028,7 @@ describe("Block Manager", () => {
       const blockManager = new BlockManager({
         maxBlockCached: 50,
         getBlock: mockRpc.getBlock.bind(mockRpc),
+        getBlocksBatch: mockRpc.getBlocksBatch.bind(mockRpc),
         getLogs: mockRpc.getLogs.bind(mockRpc),
         maxRetryGetBlock: 5,
         retryDelayGetBlockMs: 200,
@@ -1024,6 +1078,7 @@ describe("Block Manager", () => {
       const blockManager = new BlockManager({
         maxBlockCached: 50,
         getBlock: mockRpc.getBlock.bind(mockRpc),
+        getBlocksBatch: mockRpc.getBlocksBatch.bind(mockRpc),
         getLogs: mockRpc.getLogs.bind(mockRpc),
         maxRetryGetBlock: 5,
         retryDelayGetBlockMs: 200,

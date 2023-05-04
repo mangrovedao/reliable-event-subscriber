@@ -2,15 +2,10 @@ import { Block } from "@ethersproject/providers";
 import { Mutex } from "async-mutex";
 import logger from "../util/logger";
 import ReliableProvider from "./reliableProvider";
-import MULIV2ABI from '../abi/multi-v2.abi.json';
-import { Contract } from "ethers";
-import BlockManager from "../blockManager";
-import { sleep } from "@mangrovedao/commonlib.js";
 
 namespace ReliableHttpProvider {
   export type Options = {
     estimatedBlockTimeMs: number;
-    multiv2Address: string;
   };
 }
 
@@ -24,63 +19,17 @@ class ReliableHttpProvider extends ReliableProvider {
   private lastKnownBlockNumber: number = -2; // -2 means that we are currently initializing so we should query block 'latest'
   private timeoutId: NodeJS.Timeout | undefined;
 
-  private multiContract: Contract;
 
   constructor(
     options: ReliableProvider.Options,
     private httpOptions: ReliableHttpProvider.Options
   ) {
     super(options);
-    this.multiContract = new Contract(httpOptions.multiv2Address, MULIV2ABI, options.provider);
   }
 
   async _initialize(): Promise<void> {
     this.shouldStop = false;
     await this.getLatestBlock();
-  }
-
-  /**
-    * getBlockWithMultiCalls get blocks between from (not included) and to (not included)
-    */
-  private async getBlockWithMultiCalls(from: number, to: number) {
-    logger.debug(`[ReliableHttpProvider] getBlockWithMultiCalls from: ${from}, to: ${to}`);
-    const calls = [] as {
-      target: string,
-      callData: string,
-      blockNumber: number,
-    }[];
-
-    for (let i = from ; i < to; ++i) {
-      calls.push({
-        target: this.multiContract.address,
-        callData: this.multiContract.interface.encodeFunctionData('getBlockHash', [i]),
-        blockNumber: i,
-      });
-    }
-
-    const results = await this.multiContract.callStatic.aggregate(calls);
-
-    const blocks: BlockManager.Block[] = results.returnData.map((res: any, index: number) => {
-      if (index === 0) {
-        /**
-          * Tricks: I fetched all blocks between from (included) and to (not included)
-          * so that I can have the parentHash of from + 1 
-          */
-        return {
-          parentHash: '',
-          blockHash: '',
-          number: 0,
-        }
-      }
-      return {
-        parentHash: results.returnData[index - 1],
-        blockHash: this.multiContract.interface.decodeFunctionResult('getBlockHash', res).blockHash,
-        number: calls[index].blockNumber,
-      };
-    });
-
-    blocks.shift(); // removing from block
-    return blocks;
   }
 
   async getLatestBlock(): Promise<void> {
@@ -102,7 +51,11 @@ class ReliableHttpProvider extends ReliableProvider {
           /* if ReliableHttpProvider is already initialized then fetch all blocks between this.lastKnownBlockNumber and blockHeader.number */
           const blocks = await this.getBlockWithMultiCalls(this.lastKnownBlockNumber, blockHeader.number);
 
-          for (const block of blocks) {
+          if (blocks.error) {
+            throw new Error(blocks.error);
+          }
+
+          for (const block of blocks.ok) {
             this.addBlockToQueue({
               parentHash: block.parentHash,
               hash: block.hash,

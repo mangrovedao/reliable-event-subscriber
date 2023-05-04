@@ -1,11 +1,15 @@
 import { JsonRpcProvider, Log } from "@ethersproject/providers";
 import BlockManager from "../blockManager";
 import { hexlify } from "ethers/lib/utils";
+import { Contract } from "ethers";
+import MULIV2ABI from '../abi/multi-v2.abi.json';
+import logger from "../util/logger";
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 namespace ReliableProvider {
   export type Options = BlockManager.Options & {
     provider: JsonRpcProvider;
+    multiv2Address: string;
   };
 
   export type LogWithHexStringBlockNumber = Omit<Log, "blockNumber"> & {
@@ -25,13 +29,16 @@ abstract class ReliableProvider {
   private queue: BlockManager.Block[] = [];
 
   private inProcess: boolean = false;
+  private multiContract: Contract;
 
   constructor(
     protected options: ReliableProvider.Options,
   ) {
+    this.multiContract = new Contract(options.multiv2Address, MULIV2ABI, options.provider);
     this.blockManager = new BlockManager({
       maxBlockCached: options.maxBlockCached,
       getBlock: this.getBlock.bind(this),
+      getBlocksBatch: this.getBlockWithMultiCalls.bind(this),
       getLogs: this.getLogs.bind(this),
       maxRetryGetBlock: options.maxRetryGetLogs,
       retryDelayGetBlockMs: options.maxRetryGetBlock,
@@ -89,6 +96,58 @@ abstract class ReliableProvider {
       };
     } catch (e) {
       return { error: "BlockNotFound", ok: undefined };
+    }
+  }
+
+  /**
+    * getBlockWithMultiCalls get blocks between from (not included) and to (not included)
+    */
+  protected async getBlockWithMultiCalls(from: number, to: number): Promise<BlockManager.ErrorOrBlocks> {
+    if ((to - from) < 2) {
+      return { error: undefined, ok: []};
+    }
+    logger.debug(`[ReliableProvider] getBlockWithMultiCalls from: ${from}, to: ${to}`);
+    const calls = [] as {
+      target: string,
+      callData: string,
+      blockNumber: number,
+    }[];
+
+    for (let i = from ; i < to; ++i) {
+      calls.push({
+        target: this.multiContract.address,
+        callData: this.multiContract.interface.encodeFunctionData('getBlockHash', [i]),
+        blockNumber: i,
+      });
+    }
+
+    try {
+      const results = await this.multiContract.callStatic.aggregate(calls);
+
+      const blocks: BlockManager.Block[] = results.returnData.map((res: any, index: number) => {
+        if (index === 0) {
+          /**
+            * Tricks: I fetched all blocks between from (included) and to (not included)
+            * so that I can have the parentHash of from + 1 
+            */
+          return {
+            parentHash: '',
+            blockHash: '',
+            number: 0,
+          }
+        }
+        return {
+          parentHash: results.returnData[index - 1],
+          blockHash: this.multiContract.interface.decodeFunctionResult('getBlockHash', res).blockHash,
+          number: calls[index].blockNumber,
+        };
+      });
+
+      blocks.shift(); // removing from block
+      return { error: undefined, ok: blocks, };
+    } catch (e) {
+      logger.error(`[ReliableProvider] ${e}`);
+      return { error: "BlockNotFound", ok:undefined};
     }
   }
 
