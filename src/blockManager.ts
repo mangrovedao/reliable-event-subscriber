@@ -489,7 +489,7 @@ class BlockManager {
           };
         }
         /* Our cache is consistent again we retry queryLogs */
-        return this.queryLogs(fromBlock, toBlock, rec + 1, _commonAncestor);
+        return this.queryLogs(_commonAncestor, toBlock, rec + 1, _commonAncestor);
       }
     }
 
@@ -667,6 +667,7 @@ class BlockManager {
       /**
         * ref: A
         * Here we check if the batch of blocks we queried is consitent with the chain we have in cache 
+        * if not then we detected a reorg
         */
       if (this.lastBlock!.hash !== fromBlock.parentHash) {
         logger.warn(`[BlockManager] batch detected a reorg`, {
@@ -694,6 +695,7 @@ class BlockManager {
           return { error: reorgError.error, ok: undefined };
         }
 
+        /* query all logs from `reorgAncestor` to `toBlock` */
         const { error: queryLogsError, ok: okLogs } = await this.queryLogs(
           reorgAncestor,
           toBlock,
@@ -740,18 +742,16 @@ class BlockManager {
           if (queryLogsError) {
             return { error: "FailedFetchingLog", ok: undefined };
           }
-
+          
           if (okLogs.commonAncestor) {
             this.rollbackSubscribers(okLogs.commonAncestor);
-            for (let number = okLogs.commonAncestor.number + 1; number <= toBlock.number ; ++number) {
-              this.setLastBlock(blocksMap[number]);
-            }
           } else {
+            /* construct valid chain */
             for (const block of blocks) {
               this.setLastBlock(block);
             }
           }
-           
+
           logs.push(...okLogs.logs);
           await this.applyLogs(okLogs.logs);
       }
