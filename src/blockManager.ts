@@ -155,7 +155,11 @@ class BlockManager {
   private postHandleBlockFunctions: BlockManager.HandleBlockPostHookFunction[] =
     [];
 
-  constructor(private options: BlockManager.CreateOptions) {}
+  constructor(private options: BlockManager.CreateOptions) {
+    if (options.maxBlockCached > BatchSizeRepopulate) {
+      throw new Error("BatchSizeRepopulate is smaller than max block cached");
+    }
+  }
 
   private checkLastBlockExist() {
     if (!this.lastBlock) {
