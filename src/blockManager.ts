@@ -6,6 +6,8 @@ import LogSubscriber from "./logSubscriber";
 import { Result } from "./util/types";
 import { Mutex } from "async-mutex";
 
+const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000000000000000000000000000';
+
 // eslint-disable-next-line @typescript-eslint/no-namespace
 namespace BlockManager {
   export type BlockWithoutParentHash = {
@@ -232,6 +234,11 @@ class BlockManager {
   }
 
   private setLastBlock(block: BlockManager.Block) {
+    if (this.lastBlock) {
+      if (this.lastBlock.hash !== block.parentHash) {
+        throw new Error(`Hash in inconsitent ${JSON.stringify(block)}`);
+      }
+    }
     this.lastBlock = block;
     this.blocksByNumber[block.number] = block;
     this.countsBlocksCached++;
@@ -604,26 +611,33 @@ class BlockManager {
       `[BlockManager] handleBatchBlock()`, { data: newBlock },
     );
     do {
-      const countBlocksLeft = newBlock.number - from + 1;
+      const countBlocksLeft = (newBlock.number - from) + 1;
       logger.info(
-      `[BlockManager] handleBatchBlock() still  ${countBlocksLeft} blocks`,
+      `[BlockManager] handleBatchBlock() still ${countBlocksLeft} blocks`,
       );
 
-      const to = from + this.options.batchSize;
+      const to = this.options.batchSize > countBlocksLeft ? newBlock.number : from + this.options.batchSize;
       const blocksResult = await this.options.getBlocksBatch(from, to)
 
       if (blocksResult.error) {
         return { error: blocksResult.error, ok: undefined};
       }
       const blocks = blocksResult.ok;
+
       const toBlock = blocks[blocks.length - 1];
       const fromBlock = blocks[0];
+
+      if (toBlock.hash === ZERO_ADDRESS) {
+        if (toBlock.number === newBlock.number) {
+          toBlock.hash = newBlock.hash; // repair problem with multi call
+        }
+      }
 
       logger.debug(
         '[BlockManager] handleBatchBlock()',
         {
           data: {
-            from,
+            from: fromBlock,
             to: toBlock,
           }
         }
@@ -653,6 +667,9 @@ class BlockManager {
 
       await this.applyLogs(okLogs.logs);
 
+      if (newBlock.number !== this.lastBlock!.number) {
+        await sleep(this.options.retryDelayGetBlockMs);
+      }
     } while (newBlock!.number !== this.lastBlock!.number);
 
     return {
@@ -677,7 +694,7 @@ class BlockManager {
       return { error: undefined, ok: { logs: [], rollback: undefined } };
     }
 
-    if (newBlock.number - this.lastBlock!.number > 1) {
+    if ( (newBlock.number - this.lastBlock!.number) !== 1) {
       return await this.handleBatchBlock(newBlock);
     }
 

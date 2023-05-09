@@ -17,6 +17,8 @@ namespace ReliableProvider {
   };
 }
 
+const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000000000000000000000000000';
+
 /**
   * ReliableProvider is an abstract handling block and logs fetching.
   *
@@ -131,21 +133,25 @@ abstract class ReliableProvider {
             */
           return {
             parentHash: '',
-            blockHash: '',
+            hash: '',
             number: 0,
-          }
+          } as BlockManager.Block
         }
         return {
           parentHash: results.returnData[index - 1],
-          blockHash: this.multiContract.interface.decodeFunctionResult('getBlockHash', res).blockHash,
+          hash: this.multiContract.interface.decodeFunctionResult('getBlockHash', res).blockHash,
           number: calls[index].blockNumber,
-        };
+        } as BlockManager.Block;
       });
 
       blocks.shift(); // removing (from - 1) block
-      return { error: undefined, ok: blocks, };
+  
+      return { 
+        error: undefined, 
+        ok: blocks, 
+      };
     } catch (e) {
-      logger.error(`[ReliableProvider] ${e}`);
+      logger.warn(`[ReliableProvider] ${e}`);
       return { error: "BlockNotFound", ok:undefined};
     }
   }

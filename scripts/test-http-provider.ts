@@ -15,7 +15,7 @@ const reliableProvider = new ReliableHttpProvider(
   {
     maxBlockCached: 10,
     maxRetryGetBlock: 10,
-    retryDelayGetBlockMs: 200,
+    retryDelayGetBlockMs: 1000,
     maxRetryGetLogs: 10,
     retryDelayGetLogsMs: 200,
     provider,

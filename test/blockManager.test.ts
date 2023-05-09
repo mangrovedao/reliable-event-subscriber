@@ -723,6 +723,35 @@ describe("Block Manager", () => {
       assert.notEqual(logs, undefined);
       assert.equal(logs!.length, 0);
     });
+
+    it("Batch querying block with bach size bigger than gap", async () => {
+      const mockRpc = new MockRpc(blockChain1);
+
+      const blockManager = new BlockManager({
+        maxBlockCached: 4,
+        getBlock: mockRpc.getBlock.bind(mockRpc),
+        getBlocksBatch: mockRpc.getBlocksBatch.bind(mockRpc),
+        getLogs: mockRpc.getLogs.bind(mockRpc),
+        maxRetryGetBlock: 5,
+        retryDelayGetBlockMs: 200,
+        maxRetryGetLogs: 5,
+        retryDelayGetLogsMs: 200,
+        batchSize: 10,
+      });
+
+      await blockManager.initialize(blockChain1[1].block);
+
+      const { error, ok } = await blockManager.handleBlock(
+        blockChain1[7].block
+      );
+
+      const { logs, rollback } = ok!;
+
+      assert.equal(error, undefined);
+      assert.equal(rollback, undefined);
+      assert.notEqual(logs, undefined);
+      assert.equal(logs!.length, 0);
+    });
   });
 
   describe("Block Manager with subscriber", () => {
