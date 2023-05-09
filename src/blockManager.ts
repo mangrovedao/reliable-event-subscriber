@@ -234,6 +234,7 @@ class BlockManager {
   }
 
   private setLastBlock(block: BlockManager.Block) {
+    logger.debug(`[BlockManager] setLastBlock()`, { data: block });
     if (this.lastBlock) {
       if (this.lastBlock.hash !== block.parentHash) {
         throw new Error(`Hash in inconsitent ${JSON.stringify(block)}`);
@@ -250,7 +251,6 @@ class BlockManager {
       this.countsBlocksCached--;
     }
 
-    logger.debug(`[BlockManager] setLastBlock()`, { data: block });
   }
 
    /**
@@ -357,7 +357,8 @@ class BlockManager {
    * 
    * Returns found commonAncestor.   */
   private async handleReorg(
-    newBlock: BlockManager.Block
+    newBlock: BlockManager.Block,
+    populateChain: boolean = true,
   ): Promise<BlockManager.ErrorOrReorg> {
     let { error, ok: commonAncestor } = await this.findCommonAncestor();
 
@@ -401,7 +402,9 @@ class BlockManager {
     /* commonAncestor is the new cache latest block */
     this.lastBlock = commonAncestor;
 
-    await this.populateValidChainUntilBlock(newBlock);
+    if (populateChain) {
+      await this.populateValidChainUntilBlock(newBlock);
+    }
 
     return { error: undefined, ok: commonAncestor! };
   }
@@ -469,6 +472,8 @@ class BlockManager {
     for (const log of logs) {
       const block = 
         blocksMap ? blocksMap[log.blockNumber] : this.blocksByNumber[log.blockNumber]; // TODO: verify that block exists
+
+      // console.log(block, blocksMap, log.blockNumber)
       /* check if queried log comes from a known block in our cache */
       if (block.hash !== log.blockHash) {
         /* queried log comes from a block we don't know => we detected a reorg */
@@ -610,19 +615,28 @@ class BlockManager {
     logger.info(
       `[BlockManager] handleBatchBlock()`, { data: newBlock },
     );
+
+    const logs: Log[] = [];
     do {
       const countBlocksLeft = (newBlock.number - from) + 1;
       logger.info(
       `[BlockManager] handleBatchBlock() still ${countBlocksLeft} blocks`,
       );
 
-      const to = this.options.batchSize > countBlocksLeft ? newBlock.number : from + this.options.batchSize;
-      const blocksResult = await this.options.getBlocksBatch(from, to)
+      const to = this.options.batchSize >= countBlocksLeft ? newBlock.number : from + this.options.batchSize;
+
+      const blocksResult = await this.options.getBlocksBatch(from - BatchSizeRepopulate, to)
 
       if (blocksResult.error) {
         return { error: blocksResult.error, ok: undefined};
       }
-      const blocks = blocksResult.ok;
+
+      const blocks = blocksResult.ok.slice(-(to - from) - 1);
+
+      const blocksMap = blocksResult.ok.reduce((acc, block) => {
+        acc[block.number] = block;
+        return acc;
+      }, {} as Record<number, BlockManager.Block>);
 
       const toBlock = blocks[blocks.length - 1];
       const fromBlock = blocks[0];
@@ -643,30 +657,100 @@ class BlockManager {
         }
       );
 
-      const blocksMap = blocks.reduce((acc, block) => {
-        acc[block.number] = block;
-        return acc;
-      }, {} as Record<number, BlockManager.Block>);
+      if (this.lastBlock!.hash !== fromBlock.parentHash) {
+        logger.warn(`[BlockManager] batch detected a reorg`, {
+          data: {
+            lastBlock: this.lastBlock,
+            fromBlock,
+          },
+        });
 
-      const { error: queryLogsError, ok: okLogs } = await this.queryLogs(
-        fromBlock,
-        toBlock,
-        0,
-        undefined,
-        blocksMap,
-      );
 
-      if (queryLogsError) {
-        return { error: "FailedFetchingLog", ok: undefined };
+        const { error: reorgError, ok: reorgAncestor } = await this.handleReorg(
+          newBlock,
+          false,
+        );
+
+        if (reorgError) {
+          if (reorgError.reInitialize) {
+            return {
+              error: undefined,
+              ok: {
+                logs: [],
+                rollback: reorgError.reInitialize,
+              },
+            };
+          }
+          return { error: reorgError.error, ok: undefined };
+        }
+
+        const { error: queryLogsError, ok: okLogs } = await this.queryLogs(
+          this.lastBlock!,
+          toBlock,
+          0,
+          undefined,
+          blocksMap,
+        );
+
+        if (queryLogsError) {
+          return { error: "FailedFetchingLog", ok: undefined };
+        }
+
+        const queryLogsAncestor = okLogs.commonAncestor;
+
+        const rollbackToBlock = queryLogsAncestor
+          ? queryLogsAncestor
+          : reorgAncestor;
+
+        this.rollbackSubscribers(rollbackToBlock);
+
+        logs.push(...okLogs.logs);
+
+        for (let number = rollbackToBlock.number + 1; number <= toBlock.number ; ++number) {
+          this.setLastBlock(blocksMap[number]);
+        }
+
+        await this.applyLogs(okLogs.logs);
+
+        /* do it again as subscriber may have failed to initialize in case of reorg */
+        await this.handleSubscribersInitialize(newBlock);
+
+        await this.handleBlockPostHooks();
+
+      } else {
+          const blocksMap = blocks.reduce((acc, block) => {
+            acc[block.number] = block;
+            return acc;
+          }, {} as Record<number, BlockManager.Block>);
+
+          const { error: queryLogsError, ok: okLogs } = await this.queryLogs(
+            this.lastBlock!,
+            toBlock,
+            0,
+            undefined,
+            blocksMap,
+          );
+
+          if (queryLogsError) {
+            return { error: "FailedFetchingLog", ok: undefined };
+          }
+
+          if (okLogs.commonAncestor) {
+            this.rollbackSubscribers(okLogs.commonAncestor);
+            for (let number = okLogs.commonAncestor.number + 1; number <= toBlock.number ; ++number) {
+              this.setLastBlock(blocksMap[number]);
+            }
+          } else {
+            for (const block of blocks) {
+              this.setLastBlock(block);
+            }
+          }
+           
+          logs.push(...okLogs.logs);
+          await this.applyLogs(okLogs.logs);
       }
 
-      for (const block of blocks) {
-        this.setLastBlock(block);
-      }
       from = toBlock.number + 1;
-
-      await this.applyLogs(okLogs.logs);
-
       if (newBlock.number !== this.lastBlock!.number) {
         await sleep(this.options.retryDelayGetBlockMs);
       }
@@ -675,7 +759,7 @@ class BlockManager {
     return {
       error: undefined,
       ok: {
-        logs: [],
+        logs: logs,
       },
     }
   }
@@ -694,7 +778,7 @@ class BlockManager {
       return { error: undefined, ok: { logs: [], rollback: undefined } };
     }
 
-    if ( (newBlock.number - this.lastBlock!.number) !== 1) {
+    if ( (newBlock.number - this.lastBlock!.number) > 1) {
       return await this.handleBatchBlock(newBlock);
     }
 

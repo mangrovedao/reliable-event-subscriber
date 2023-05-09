@@ -720,8 +720,11 @@ describe("Block Manager", () => {
 
       assert.equal(error, undefined);
       assert.equal(rollback, undefined);
-      assert.notEqual(logs, undefined);
-      assert.equal(logs!.length, 0);
+      assert.equal(logs!.length, 4);
+      assert.equal(logs[0], blockChain1[2].logs[0]);
+      assert.equal(logs[1], blockChain1[2].logs[1]);
+      assert.equal(logs[2], blockChain1[3].logs[0]);
+      assert.equal(logs[3], blockChain1[3].logs[1]);
     });
 
     it("Batch querying block with bach size bigger than gap", async () => {
@@ -749,8 +752,46 @@ describe("Block Manager", () => {
 
       assert.equal(error, undefined);
       assert.equal(rollback, undefined);
-      assert.notEqual(logs, undefined);
-      assert.equal(logs!.length, 0);
+      assert.equal(logs!.length, 4);
+      assert.equal(logs[0], blockChain1[2].logs[0]);
+      assert.equal(logs[1], blockChain1[2].logs[1]);
+      assert.equal(logs[2], blockChain1[3].logs[0]);
+      assert.equal(logs[3], blockChain1[3].logs[1]);
+    });
+
+    it("Batch querying block reorg", async () => {
+      const mockRpc = new MockRpc(blockChain1);
+
+      const blockManager = new BlockManager({
+        maxBlockCached: 4,
+        getBlock: mockRpc.getBlock.bind(mockRpc),
+        getBlocksBatch: mockRpc.getBlocksBatch.bind(mockRpc),
+        getLogs: mockRpc.getLogs.bind(mockRpc),
+        maxRetryGetBlock: 5,
+        retryDelayGetBlockMs: 200,
+        maxRetryGetLogs: 5,
+        retryDelayGetLogsMs: 200,
+        batchSize: 2,
+      });
+
+      await blockManager.initialize(blockChain1[1].block);
+      await blockManager.handleBlock(blockChain1[2].block);
+
+      mockRpc.blockByNumber = blockChain2;
+
+      const { error, ok } = await blockManager.handleBlock(
+        blockChain2[4].block
+      );
+
+      const { logs, rollback } = ok!;
+
+      assert.equal(error, undefined);
+      assert.equal(rollback, undefined);
+      assert.equal(logs!.length, 3);
+      assert.equal(logs[0], blockChain2[2].logs[0]);
+      assert.equal(logs[1], blockChain2[3].logs[0]);
+      assert.equal(logs[2], blockChain2[4].logs[0]);
+      assert.equal(blockManager.getLastBlock(), blockChain2[4].block);
     });
   });
 
