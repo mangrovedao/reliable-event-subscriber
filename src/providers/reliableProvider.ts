@@ -44,7 +44,6 @@ abstract class ReliableProvider {
       retryDelayGetBlockMs: options.maxRetryGetBlock,
       maxRetryGetLogs: options.maxRetryGetLogs,
       retryDelayGetLogsMs: options.retryDelayGetLogsMs,
-      blockFinality: options.blockFinality,
       batchSize: options.batchSize,
     });
   }
@@ -100,10 +99,10 @@ abstract class ReliableProvider {
   }
 
   /**
-    * getBlockWithMultiCalls get blocks between from (not included) and to (not included)
+    * getBlockWithMultiCalls get blocks between from (included) and to (included)
     */
   protected async getBlockWithMultiCalls(from: number, to: number): Promise<BlockManager.ErrorOrBlocks> {
-    if ((to - from) < 2) {
+    if (from === to) {
       return { error: undefined, ok: []};
     }
     logger.debug(`[ReliableProvider] getBlockWithMultiCalls from: ${from}, to: ${to}`);
@@ -113,7 +112,7 @@ abstract class ReliableProvider {
       blockNumber: number,
     }[];
 
-    for (let i = from ; i < to; ++i) {
+    for (let i = from - 1 ; i <= to; ++i) {
       calls.push({
         target: this.multiContract.address,
         callData: this.multiContract.interface.encodeFunctionData('getBlockHash', [i]),
@@ -143,7 +142,7 @@ abstract class ReliableProvider {
         };
       });
 
-      blocks.shift(); // removing from block
+      blocks.shift(); // removing (from - 1) block
       return { error: undefined, ok: blocks, };
     } catch (e) {
       logger.error(`[ReliableProvider] ${e}`);

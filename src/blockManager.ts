@@ -99,10 +99,6 @@ namespace BlockManager {
      */
     retryDelayGetLogsMs: number;
     /**
-      * Finality is the depth in which we assume that block will never be reorged 
-      */
-    blockFinality: number;
-    /**
       * Batch block size
       */
     batchSize: number;
@@ -119,7 +115,7 @@ namespace BlockManager {
      */
     getBlock: (number: number) => Promise<ErrorOrBlock>;
     /**
-     *  getBlocksBatch return blocks with blockNumber between `from` (excluded) and `to` (excluded)
+     *  getBlocksBatch return blocks with blockNumber between `from` (included) and `to` (included)
      */
     getBlocksBatch: (from: number, to: number) => Promise<ErrorOrBlocks>;
     /**
@@ -273,7 +269,7 @@ class BlockManager {
 
     const rpcBlocks = await this.options.getBlocksBatch(
       this.lastBlock!.number - BatchSizeRepopulate,
-      this.lastBlock!.number + 1,
+      this.lastBlock!.number,
     );
 
     if (rpcBlocks.error) {
@@ -323,7 +319,7 @@ class BlockManager {
       blocksPromises.push(this.options.getBlock(i));
     }
 
-    const blocks = await this.options.getBlocksBatch(this.lastBlock!.number, newBlock.number + 1);
+    const blocks = await this.options.getBlocksBatch(this.lastBlock!.number + 1, newBlock.number);
 
     if (blocks.error) {
       return this.populateValidChainUntilBlock(newBlock, rec + 1);
@@ -359,7 +355,7 @@ class BlockManager {
     let { error, ok: commonAncestor } = await this.findCommonAncestor();
 
     if (error) {
-      logger.error(`[BlockManager] handleReorg(): failure`, error);
+      logger.warn(`[BlockManager] handleReorg(): failure ${error}`);
       if (error === "NoCommonAncestorFoundInCache") {
         /* we didn't find matching ancestor between our cache and rpc. re-initialize with newBlock */
         await this.initialize(newBlock);
@@ -412,10 +408,8 @@ class BlockManager {
     fromBlock: BlockManager.Block,
     toBlock: BlockManager.Block,
     rec = 0,
-    options: {
-      commonAncestor?: BlockManager.Block,
-      verifyLogs?: boolean,
-    } = {},
+    commonAncestor?: BlockManager.Block,
+    blocksMap?: Record<number, BlockManager.Block>,
   ): Promise<BlockManager.ErrorOrLogsWithCommonAncestor> {
     logger.debug(
       '[BlockManager] queryLogs()',
@@ -461,22 +455,13 @@ class BlockManager {
     const logs = ok!;
 
     /* DIRTY: if we detected a reorg we already repopulate the chain until toBlock.number */
-    if (!options.commonAncestor) {
+    if (!commonAncestor && !blocksMap) {
       this.setLastBlock(toBlock);
     }
 
-    if (!options.verifyLogs) {
-      return {
-        error: undefined,
-        ok: {
-          logs,
-          commonAncestor: undefined,
-        }
-      };
-    }
-
     for (const log of logs) {
-      const block = this.blocksByNumber[log.blockNumber]; // TODO: verify that block exists
+      const block = 
+        blocksMap ? blocksMap[log.blockNumber] : this.blocksByNumber[log.blockNumber]; // TODO: verify that block exists
       /* check if queried log comes from a known block in our cache */
       if (block.hash !== log.blockHash) {
         /* queried log comes from a block we don't know => we detected a reorg */
@@ -492,10 +477,7 @@ class BlockManager {
           };
         }
         /* Our cache is consistent again we retry queryLogs */
-        return this.queryLogs(fromBlock, toBlock, rec + 1, { 
-          commonAncestor: _commonAncestor,  
-          verifyLogs: options.verifyLogs,
-        });
+        return this.queryLogs(fromBlock, toBlock, rec + 1, _commonAncestor);
       }
     }
 
@@ -503,7 +485,7 @@ class BlockManager {
       error: undefined,
       ok: {
         logs,
-        commonAncestor: options ? options.commonAncestor : undefined,
+        commonAncestor: commonAncestor,
       },
     };
   }
@@ -617,75 +599,61 @@ class BlockManager {
   ): Promise<BlockManager.HandleBlockResult> {
     this.checkLastBlockExist();
 
-    let from = this.lastBlock!;
+    let from = this.lastBlock!.number + 1;
     logger.info(
       `[BlockManager] handleBatchBlock()`, { data: newBlock },
     );
     do {
-      const countBlocksLeft = newBlock.number - from.number;
+      const countBlocksLeft = newBlock.number - from + 1;
       logger.info(
       `[BlockManager] handleBatchBlock() still  ${countBlocksLeft} blocks`,
       );
 
+      const to = from + this.options.batchSize;
+      const blocksResult = await this.options.getBlocksBatch(from, to)
 
-      let batchSize = this.options.batchSize;
-      if ((this.options.batchSize + this.options.blockFinality) > countBlocksLeft) {
-        batchSize = countBlocksLeft - this.options.blockFinality;
+      if (blocksResult.error) {
+        return { error: blocksResult.error, ok: undefined};
       }
+      const blocks = blocksResult.ok;
+      const toBlock = blocks[blocks.length - 1];
+      const fromBlock = blocks[0];
 
-      let { error, ok } = await this.options.getBlock(from.number + batchSize);
-      if (error) {
-        return { error, ok: undefined};
-      }
-
-      let to = ok!;
       logger.debug(
         '[BlockManager] handleBatchBlock()',
         {
           data: {
             from,
-            to,
+            to: toBlock,
           }
         }
       );
 
+      const blocksMap = blocks.reduce((acc, block) => {
+        acc[block.number] = block;
+        return acc;
+      }, {} as Record<number, BlockManager.Block>);
+
       const { error: queryLogsError, ok: okLogs } = await this.queryLogs(
-        from,
-        to!,
+        fromBlock,
+        toBlock,
         0,
-        {
-          verifyLogs: false, 
-        }
+        undefined,
+        blocksMap,
       );
 
       if (queryLogsError) {
         return { error: "FailedFetchingLog", ok: undefined };
       }
-      from = to;
+
+      for (const block of blocks) {
+        this.setLastBlock(block);
+      }
+      from = toBlock.number + 1;
 
       await this.applyLogs(okLogs.logs);
 
-    } while ((newBlock!.number - this.options.batchSize) > this.lastBlock!.number);
-
-    logger.debug(
-    `[BlockManager] handleBatchBlock() with finality  ${newBlock.number - this.lastBlock!.number} blocks`,
-    );
-
-    const blocksPromises = [];
-    for (let i = this.lastBlock!.number + 1 ; i < newBlock.number ; ++i) {
-      blocksPromises.push(this.options.getBlock(i));
-    }
-
-    const blocks = await Promise.all(blocksPromises);
-    for (const block of blocks) {
-      if (block.error) {
-        return { error: block.error, ok: undefined};
-      }
-
-      await this._handleBlock(block.ok);
-    }
-     
-    await this._handleBlock(newBlock);
+    } while (newBlock!.number !== this.lastBlock!.number);
 
     return {
       error: undefined,
@@ -709,7 +677,7 @@ class BlockManager {
       return { error: undefined, ok: { logs: [], rollback: undefined } };
     }
 
-    if (newBlock.number - this.lastBlock!.number > this.options.maxBlockCached) {
+    if (newBlock.number - this.lastBlock!.number > 1) {
       return await this.handleBatchBlock(newBlock);
     }
 
@@ -748,10 +716,7 @@ class BlockManager {
         reorgAncestor,
         newBlock,
         0,
-        {
-          verifyLogs: true,
-          commonAncestor: reorgAncestor!,
-        }
+        reorgAncestor,
       );
 
       if (queryLogsError) {
@@ -798,10 +763,6 @@ class BlockManager {
       const { error: queryLogsError, ok: okQueryLogs } = await this.queryLogs(
         this.lastBlock!,
         newBlock,
-        0,
-        {
-          verifyLogs: true,
-        }
       );
 
       if (queryLogsError) {

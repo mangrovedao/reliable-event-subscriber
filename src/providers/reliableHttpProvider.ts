@@ -16,9 +16,7 @@ class ReliableHttpProvider extends ReliableProvider {
   private shouldStop: boolean = false;
   private mutex: Mutex = new Mutex();
 
-  private lastKnownBlockNumber: number = -2; // -2 means that we are currently initializing so we should query block 'latest'
   private timeoutId: NodeJS.Timeout | undefined;
-
 
   constructor(
     options: ReliableProvider.Options,
@@ -47,25 +45,6 @@ class ReliableHttpProvider extends ReliableProvider {
           "latest"
         ); 
 
-        if (this.lastKnownBlockNumber !== -2) {
-          /* if ReliableHttpProvider is already initialized then fetch all blocks between this.lastKnownBlockNumber and blockHeader.number */
-          const blocks = await this.getBlockWithMultiCalls(this.lastKnownBlockNumber, blockHeader.number);
-
-          if (blocks.error) {
-            throw new Error(blocks.error);
-          }
-
-          for (const block of blocks.ok) {
-            this.addBlockToQueue({
-              parentHash: block.parentHash,
-              hash: block.hash,
-              number: block.number,
-            });
-          }
-        }
-
-        this.lastKnownBlockNumber = blockHeader.number;
-
         this.addBlockToQueue({
           parentHash: blockHeader.parentHash,
           hash: blockHeader.hash,
@@ -88,7 +67,6 @@ class ReliableHttpProvider extends ReliableProvider {
     this.shouldStop = true;
     clearTimeout(this.timeoutId);
     this.timeoutId = undefined;
-    this.lastKnownBlockNumber = -2;
   }
 }
 

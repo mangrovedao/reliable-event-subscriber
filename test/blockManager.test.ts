@@ -33,7 +33,7 @@ class MockRpc {
 
   async getBlocksBatch(from: number, to: number): Promise<BlockManager.ErrorOrBlocks> {
     const blocks: BlockManager.Block[] = [];
-    for (let i = to - 1 ; i > from ; --i) {
+    for (let i = to  ; i >= from ; --i) {
       const block = this.blockByNumber[i];
       if (!block) {
         return {
@@ -342,7 +342,6 @@ describe("Block Manager", () => {
         retryDelayGetBlockMs: 200,
         maxRetryGetLogs: 5,
         retryDelayGetLogsMs: 200,
-        blockFinality: 4,
         batchSize: 25,
       });
 
@@ -377,7 +376,6 @@ describe("Block Manager", () => {
         retryDelayGetBlockMs: 200,
         maxRetryGetLogs: 5,
         retryDelayGetLogsMs: 200,
-        blockFinality: 1,
         batchSize: 2,
       });
 
@@ -411,7 +409,6 @@ describe("Block Manager", () => {
         retryDelayGetBlockMs: 200,
         maxRetryGetLogs: 5,
         retryDelayGetLogsMs: 200,
-        blockFinality: 1,
         batchSize: 2,
       });
 
@@ -446,7 +443,6 @@ describe("Block Manager", () => {
         retryDelayGetBlockMs: 200,
         maxRetryGetLogs: 5,
         retryDelayGetLogsMs: 200,
-        blockFinality: 1,
         batchSize: 2,
       });
 
@@ -484,7 +480,6 @@ describe("Block Manager", () => {
         retryDelayGetBlockMs: 200,
         maxRetryGetLogs: 5,
         retryDelayGetLogsMs: 200,
-        blockFinality: 1,
         batchSize: 2,
       });
 
@@ -516,7 +511,6 @@ describe("Block Manager", () => {
         retryDelayGetBlockMs: 200,
         maxRetryGetLogs: 5,
         retryDelayGetLogsMs: 200,
-        blockFinality: 1,
         batchSize: 2,
       });
 
@@ -544,7 +538,6 @@ describe("Block Manager", () => {
         retryDelayGetBlockMs: 200,
         maxRetryGetLogs: 5,
         retryDelayGetLogsMs: 200,
-        blockFinality: 1,
         batchSize: 2,
       });
 
@@ -578,7 +571,6 @@ describe("Block Manager", () => {
         retryDelayGetBlockMs: 200,
         maxRetryGetLogs: 5,
         retryDelayGetLogsMs: 200,
-        blockFinality: 1,
         batchSize: 2,
       });
 
@@ -612,7 +604,6 @@ describe("Block Manager", () => {
         retryDelayGetBlockMs: 200,
         maxRetryGetLogs: 5,
         retryDelayGetLogsMs: 200,
-        blockFinality: 1,
         batchSize: 2,
       });
 
@@ -654,7 +645,6 @@ describe("Block Manager", () => {
         retryDelayGetBlockMs: 200,
         maxRetryGetLogs: 5,
         retryDelayGetLogsMs: 200,
-        blockFinality: 1,
         batchSize: 2,
       });
 
@@ -685,7 +675,6 @@ describe("Block Manager", () => {
         retryDelayGetBlockMs: 200,
         maxRetryGetLogs: 5,
         retryDelayGetLogsMs: 200,
-        blockFinality: 1,
         batchSize: 2,
       });
 
@@ -718,7 +707,6 @@ describe("Block Manager", () => {
         retryDelayGetBlockMs: 200,
         maxRetryGetLogs: 5,
         retryDelayGetLogsMs: 200,
-        blockFinality: 1,
         batchSize: 2,
       });
 
@@ -750,7 +738,6 @@ describe("Block Manager", () => {
         retryDelayGetBlockMs: 200,
         maxRetryGetLogs: 5,
         retryDelayGetLogsMs: 200,
-        blockFinality: 1,
         batchSize: 2,
       });
 
@@ -790,7 +777,6 @@ describe("Block Manager", () => {
         retryDelayGetBlockMs: 200,
         maxRetryGetLogs: 5,
         retryDelayGetLogsMs: 200,
-        blockFinality: 1,
         batchSize: 2,
       });
 
@@ -836,7 +822,6 @@ describe("Block Manager", () => {
         retryDelayGetBlockMs: 200,
         maxRetryGetLogs: 5,
         retryDelayGetLogsMs: 200,
-        blockFinality: 1,
         batchSize: 2,
       });
 
@@ -888,7 +873,6 @@ describe("Block Manager", () => {
         retryDelayGetBlockMs: 200,
         maxRetryGetLogs: 5,
         retryDelayGetLogsMs: 200,
-        blockFinality: 1,
         batchSize: 2,
       });
 
@@ -934,7 +918,6 @@ describe("Block Manager", () => {
         retryDelayGetBlockMs: 200,
         maxRetryGetLogs: 5,
         retryDelayGetLogsMs: 200,
-        blockFinality: 1,
         batchSize: 2,
       });
 
@@ -986,7 +969,6 @@ describe("Block Manager", () => {
         retryDelayGetBlockMs: 200,
         maxRetryGetLogs: 5,
         retryDelayGetLogsMs: 200,
-        blockFinality: 1,
         batchSize: 2,
       });
 
@@ -1034,7 +1016,6 @@ describe("Block Manager", () => {
         retryDelayGetBlockMs: 200,
         maxRetryGetLogs: 5,
         retryDelayGetLogsMs: 200,
-        blockFinality: 1,
         batchSize: 2,
       });
 
@@ -1084,7 +1065,6 @@ describe("Block Manager", () => {
         retryDelayGetBlockMs: 200,
         maxRetryGetLogs: 5,
         retryDelayGetLogsMs: 200,
-        blockFinality: 1,
         batchSize: 2,
       });
 

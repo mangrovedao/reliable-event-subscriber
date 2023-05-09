@@ -63,7 +63,6 @@ describe("ReliableWebSocketProvider", () => {
         retryDelayGetBlockMs: 200,
         maxRetryGetLogs: 5,
         retryDelayGetLogsMs: 200,
-        blockFinality: 1,
         batchSize: 2,
         multiv2Address: '', // can be null in test
       },
