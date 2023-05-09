@@ -6,6 +6,7 @@ import ReliableProvider from "./reliableProvider";
 namespace ReliableHttpProvider {
   export type Options = {
     estimatedBlockTimeMs: number;
+    onError: (e: any) => boolean;
   };
 }
 
@@ -52,6 +53,10 @@ class ReliableHttpProvider extends ReliableProvider {
         });
       } catch (e) {
         logger.error('failed handling block', e);
+        if (this.httpOptions.onError(e)) {
+          this.stop();
+        }
+        return;
       }
 
       /* we could write a smarter algoritm which try to be as close as possible with blockChain block production rate */

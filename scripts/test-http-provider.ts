@@ -17,13 +17,17 @@ const reliableProvider = new ReliableHttpProvider(
     maxRetryGetBlock: 10,
     retryDelayGetBlockMs: 1000,
     maxRetryGetLogs: 10,
-    retryDelayGetLogsMs: 200,
+    retryDelayGetLogsMs: 1000,
     provider,
     batchSize: 25,
     multiv2Address: '0x275617327c958bD06b5D6b871E7f491D76113dd8', //polygon
   },
   {
-    estimatedBlockTimeMs: 2000,
+    estimatedBlockTimeMs: 200,
+    onError: (error: any) => {
+      console.error(error);
+      return false;
+    }
   }
 );
 
