@@ -488,7 +488,9 @@ class BlockManager {
             ok: undefined,
           };
         }
-        /* Our cache is consistent again we retry queryLogs */
+        /** Our cache is consistent again we retry queryLogs, 
+          * we should retry with from = _commonAncestor, to get all rollbacked events.
+          * */
         return this.queryLogs(_commonAncestor, toBlock, rec + 1, _commonAncestor);
       }
     }
