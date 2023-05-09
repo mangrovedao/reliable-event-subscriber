@@ -473,7 +473,6 @@ class BlockManager {
       const block = 
         blocksMap ? blocksMap[log.blockNumber] : this.blocksByNumber[log.blockNumber]; // TODO: verify that block exists
 
-      // console.log(block, blocksMap, log.blockNumber)
       /* check if queried log comes from a known block in our cache */
       if (block.hash !== log.blockHash) {
         /* queried log comes from a block we don't know => we detected a reorg */
