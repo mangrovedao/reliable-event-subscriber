@@ -362,7 +362,6 @@ class BlockManager {
    * Returns found commonAncestor.   */
   private async handleReorg(
     newBlock: BlockManager.Block,
-    populateChain: boolean = true,
   ): Promise<BlockManager.ErrorOrReorg> {
     let { error, ok: commonAncestor } = await this.findCommonAncestor();
 
@@ -406,9 +405,7 @@ class BlockManager {
     /* commonAncestor is the new cache latest block */
     this.lastBlock = commonAncestor;
 
-    if (populateChain) {
-      await this.populateValidChainUntilBlock(newBlock);
-    }
+    await this.populateValidChainUntilBlock(newBlock);
 
     return { error: undefined, ok: commonAncestor! };
   }
@@ -682,7 +679,6 @@ class BlockManager {
 
         const { error: reorgError, ok: reorgAncestor } = await this.handleReorg(
           newBlock,
-          false,
         );
 
         if (reorgError) {
@@ -699,7 +695,7 @@ class BlockManager {
         }
 
         const { error: queryLogsError, ok: okLogs } = await this.queryLogs(
-          this.lastBlock!,
+          reorgAncestor,
           toBlock,
           0,
           undefined,
@@ -719,10 +715,6 @@ class BlockManager {
         this.rollbackSubscribers(rollbackToBlock);
 
         logs.push(...okLogs.logs);
-
-        for (let number = rollbackToBlock.number + 1; number <= toBlock.number ; ++number) {
-          this.setLastBlock(blocksMap[number]);
-        }
 
         await this.applyLogs(okLogs.logs);
 
