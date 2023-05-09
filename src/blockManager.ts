@@ -621,29 +621,36 @@ class BlockManager {
 
     const logs: Log[] = [];
     do {
-      const countBlocksLeft = (newBlock.number - from) + 1;
+      const countBlocksLeft = (newBlock.number - from) + 1; // from is included
       logger.info(
       `[BlockManager] handleBatchBlock() still ${countBlocksLeft} blocks`,
       );
 
       const to = this.options.batchSize >= countBlocksLeft ? newBlock.number : from + this.options.batchSize;
 
-      const blocksResult = await this.options.getBlocksBatch(from - BatchSizeRepopulate, to)
+      /* fetch all blocks between from and to fetch `BatchSizeRepopulate` blocks before from to prevent requerying later */
+      const blocksResult = await this.options.getBlocksBatch(from - BatchSizeRepopulate, to);
 
       if (blocksResult.error) {
         return { error: blocksResult.error, ok: undefined};
       }
 
-      const blocks = blocksResult.ok.slice(-(to - from) - 1);
+      const blocks = blocksResult.ok.slice(-(to - from) - 1); /* extract blocks between from (included) and to (included) */
 
+      /* build a block map number to block */
       const blocksMap = blocksResult.ok.reduce((acc, block) => {
         acc[block.number] = block;
         return acc;
       }, {} as Record<number, BlockManager.Block>);
 
+      /* get block object for `to` and `from` block numbers */
       const toBlock = blocks[blocks.length - 1];
       const fromBlock = blocks[0];
 
+      /** 
+        * when quering block with a multicall sometimes it return empty block hash for block latest 
+        * we can override it our self, because later we check that chain valid see ref:A.
+        **/
       if (toBlock.hash === ZERO_ADDRESS) {
         if (toBlock.number === newBlock.number) {
           toBlock.hash = newBlock.hash; // repair problem with multi call
@@ -660,6 +667,10 @@ class BlockManager {
         }
       );
 
+      /**
+        * ref: A
+        * Here we check if the batch of blocks we queried is consitent with the chain we have in cache 
+        */
       if (this.lastBlock!.hash !== fromBlock.parentHash) {
         logger.warn(`[BlockManager] batch detected a reorg`, {
           data: {
