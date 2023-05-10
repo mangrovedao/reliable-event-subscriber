@@ -63,13 +63,14 @@ describe("ReliableWebSocketProvider", () => {
         retryDelayGetBlockMs: 200,
         maxRetryGetLogs: 5,
         retryDelayGetLogsMs: 200,
-        blockFinality: 1,
         batchSize: 2,
+        multiv2Address: '', // can be null in test
       },
       {
         wsUrl: wsUrl,
         pingIntervalMs: 1000,
         pingTimeoutMs: 200,
+        estimatedBlockTimeMs: 1000,
       }
     );
 
@@ -77,6 +78,45 @@ describe("ReliableWebSocketProvider", () => {
 
     connection.send(mockRPCMessages[0]);
     await sleep(200);
+
+    assert.equal(
+      reliableWebsocketProvider.blockManager.getLastBlock().hash,
+      "0x4ad7be68fcc73e24d114b249096c2cf43ad6d29c6667a1af89f86d45b5ad9ad4"
+    );
+    connection.send(mockRPCMessages[1]);
+    await sleep(200);
+
+    assert.equal(
+      reliableWebsocketProvider.blockManager.getLastBlock().hash,
+      "0x900171311bb44d46968a67d307103b680f47a1b1cd0b3b9ebfb5843c58c36ff3"
+    );
+  });
+
+  it("Block timeout", async () => {
+    const provider = new JsonRpcProvider(wsUrl);
+    const reliableWebsocketProvider = new ReliableWebSocketProvider(
+      {
+        provider: provider,
+        maxBlockCached: 50,
+        maxRetryGetBlock: 5,
+        retryDelayGetBlockMs: 200,
+        maxRetryGetLogs: 5,
+        retryDelayGetLogsMs: 200,
+        batchSize: 2,
+        multiv2Address: '', // can be null in test
+      },
+      {
+        wsUrl: wsUrl,
+        pingIntervalMs: 1000,
+        pingTimeoutMs: 200,
+        estimatedBlockTimeMs: 100,
+      }
+    );
+
+    await reliableWebsocketProvider.initialize(firstBlock);
+
+    connection.send(mockRPCMessages[0]);
+    await sleep(1100);
 
     assert.equal(
       reliableWebsocketProvider.blockManager.getLastBlock().hash,

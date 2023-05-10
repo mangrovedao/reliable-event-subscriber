@@ -28,6 +28,7 @@ export class ReliableWebSocket {
   constructor(protected options: ReliableWebsocketOptions) {}
 
   public async initialize() {
+    logger.info(`[ReliableWebSocket] connect`);
     this.shouldStop = false;
     try {
       await new Promise((resolve, reject) => {
@@ -62,7 +63,13 @@ export class ReliableWebSocket {
   }
 
   public stop() {
+    logger.info(`[ReliableWebSocket] stop`);
     this.shouldStop = true;
+    this.ws!.terminate();
+  }
+
+  public restart() {
+    logger.info(`[ReliableWebSocket] restart`);
     this.ws!.terminate();
   }
 
@@ -98,6 +105,7 @@ export class ReliableWebSocket {
   }
 
   private onError(error: Error) {
+    logger.error(`[ReliableWebSocket] error`, error)
     this.ws!.terminate();
   }
 
@@ -109,7 +117,7 @@ export class ReliableWebSocket {
     }
     this.lastCloseTimestampMs = now;
 
-    logger.debug("connection is dead try to reconnect");
+    logger.warn("[ReliableWebSocket] connection is dead try to reconnect");
     if (!this.shouldStop) {
       this.initialize();
     }

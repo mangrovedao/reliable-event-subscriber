@@ -157,7 +157,6 @@ const reliableProvider = new DbReliableProvider(
     maxRetryGetLogs: 10,
     retryDelayGetLogsMs: 200,
     provider,
-    blockFinality: 5,
     batchSize: 25,
   },
   {

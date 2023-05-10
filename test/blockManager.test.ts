@@ -1,3 +1,6 @@
+import * as dotenv from 'dotenv'; 
+dotenv.config();
+
 import assert from "assert";
 import { describe, it } from "mocha";
 import { enableLogging } from "../src/util/logger";
@@ -28,6 +31,25 @@ class MockRpc {
     return { error: undefined, ok: block.block };
   }
 
+  async getBlocksBatch(from: number, to: number): Promise<BlockManager.ErrorOrBlocks> {
+    const blocks: BlockManager.Block[] = [];
+    for (let i = to  ; i >= from ; --i) {
+      const block = this.blockByNumber[i];
+      if (!block) {
+        return {
+          error: undefined,
+          ok: blocks.reverse(),
+        }
+      }
+      blocks.push(block.block);
+    }
+
+    return {
+      error: undefined,
+      ok: blocks.reverse(),
+    };
+  }
+
   async getLogs(
     from: number,
     to: number,
@@ -55,6 +77,19 @@ class MockRpc {
       }
 
       return this.getBlock(number);
+    };
+  }
+
+  failingBeforeXCallGetBlocksBatch(
+    x: number
+  ): (from: number, to: number) => Promise<BlockManager.ErrorOrBlocks> {
+    return async (from: number, to: number) => {
+      if (this.countFailingGetBlock !== x) {
+        this.countFailingGetBlock++;
+        return { error: "BlockNotFound", ok: undefined };
+      }
+
+      return this.getBlocksBatch(from, to);
     };
   }
 
@@ -301,12 +336,12 @@ describe("Block Manager", () => {
       const blockManager = new BlockManager({
         maxBlockCached: 50,
         getBlock: mockRpc.getBlock.bind(mockRpc),
+        getBlocksBatch: mockRpc.getBlocksBatch.bind(mockRpc),
         getLogs: mockRpc.getLogs.bind(mockRpc),
         maxRetryGetBlock: 5,
         retryDelayGetBlockMs: 200,
         maxRetryGetLogs: 5,
         retryDelayGetLogsMs: 200,
-        blockFinality: 4,
         batchSize: 25,
       });
 
@@ -335,12 +370,12 @@ describe("Block Manager", () => {
       const blockManager = new BlockManager({
         maxBlockCached: 50,
         getBlock: mockRpc.getBlock.bind(mockRpc),
+        getBlocksBatch: mockRpc.getBlocksBatch.bind(mockRpc),
         getLogs: mockRpc.getLogs.bind(mockRpc),
         maxRetryGetBlock: 5,
         retryDelayGetBlockMs: 200,
         maxRetryGetLogs: 5,
         retryDelayGetLogsMs: 200,
-        blockFinality: 1,
         batchSize: 2,
       });
 
@@ -368,12 +403,12 @@ describe("Block Manager", () => {
       const blockManager = new BlockManager({
         maxBlockCached: 50,
         getBlock: mockRpc.getBlock.bind(mockRpc),
+        getBlocksBatch: mockRpc.getBlocksBatch.bind(mockRpc),
         getLogs: mockRpc.getLogs.bind(mockRpc),
         maxRetryGetBlock: 5,
         retryDelayGetBlockMs: 200,
         maxRetryGetLogs: 5,
         retryDelayGetLogsMs: 200,
-        blockFinality: 1,
         batchSize: 2,
       });
 
@@ -402,12 +437,12 @@ describe("Block Manager", () => {
       const blockManager = new BlockManager({
         maxBlockCached: 50,
         getBlock: mockRpc.getBlock.bind(mockRpc),
+        getBlocksBatch: mockRpc.getBlocksBatch.bind(mockRpc),
         getLogs: mockRpc.getLogs.bind(mockRpc),
         maxRetryGetBlock: 5,
         retryDelayGetBlockMs: 200,
         maxRetryGetLogs: 5,
         retryDelayGetLogsMs: 200,
-        blockFinality: 1,
         batchSize: 2,
       });
 
@@ -439,12 +474,12 @@ describe("Block Manager", () => {
       const blockManager = new BlockManager({
         maxBlockCached: 50,
         getBlock: mockRpc.getBlock.bind(mockRpc),
+        getBlocksBatch: mockRpc.getBlocksBatch.bind(mockRpc),
         getLogs: mockRpc.getLogs.bind(mockRpc),
         maxRetryGetBlock: 5,
         retryDelayGetBlockMs: 200,
         maxRetryGetLogs: 5,
         retryDelayGetLogsMs: 200,
-        blockFinality: 1,
         batchSize: 2,
       });
 
@@ -470,12 +505,12 @@ describe("Block Manager", () => {
       const blockManager = new BlockManager({
         maxBlockCached: 50,
         getBlock: mockRpc.getBlock.bind(mockRpc),
+        getBlocksBatch: mockRpc.getBlocksBatch.bind(mockRpc),
         getLogs: mockRpc.getLogs.bind(mockRpc),
         maxRetryGetBlock: 5,
         retryDelayGetBlockMs: 200,
         maxRetryGetLogs: 5,
         retryDelayGetLogsMs: 200,
-        blockFinality: 1,
         batchSize: 2,
       });
 
@@ -497,12 +532,12 @@ describe("Block Manager", () => {
       const blockManager = new BlockManager({
         maxBlockCached: 50,
         getBlock: mockRpc.getBlock.bind(mockRpc),
+        getBlocksBatch: mockRpc.getBlocksBatch.bind(mockRpc),
         getLogs: mockRpc.failingBeforeXCallGetLogs(3).bind(mockRpc),
         maxRetryGetBlock: 5,
         retryDelayGetBlockMs: 200,
         maxRetryGetLogs: 5,
         retryDelayGetLogsMs: 200,
-        blockFinality: 1,
         batchSize: 2,
       });
 
@@ -530,12 +565,12 @@ describe("Block Manager", () => {
       const blockManager = new BlockManager({
         maxBlockCached: 50,
         getBlock: mockRpc.failingBeforeXCallGetBlock(3).bind(mockRpc),
+        getBlocksBatch: mockRpc.failingBeforeXCallGetBlocksBatch(3).bind(mockRpc),
         getLogs: mockRpc.getLogs.bind(mockRpc),
         maxRetryGetBlock: 5,
         retryDelayGetBlockMs: 200,
         maxRetryGetLogs: 5,
         retryDelayGetLogsMs: 200,
-        blockFinality: 1,
         batchSize: 2,
       });
 
@@ -563,12 +598,12 @@ describe("Block Manager", () => {
       const blockManager = new BlockManager({
         maxBlockCached: 50,
         getBlock: mockRpc.failingBeforeXCallGetBlock(6).bind(mockRpc),
+        getBlocksBatch: mockRpc.failingBeforeXCallGetBlocksBatch(6).bind(mockRpc),
         getLogs: mockRpc.getLogs.bind(mockRpc),
         maxRetryGetBlock: 5,
         retryDelayGetBlockMs: 200,
         maxRetryGetLogs: 5,
         retryDelayGetLogsMs: 200,
-        blockFinality: 1,
         batchSize: 2,
       });
 
@@ -604,12 +639,12 @@ describe("Block Manager", () => {
       const blockManager = new BlockManager({
         maxBlockCached: 50,
         getBlock: mockRpc.getBlock.bind(mockRpc),
+        getBlocksBatch: mockRpc.getBlocksBatch.bind(mockRpc),
         getLogs: mockRpc.getLogs.bind(mockRpc),
         maxRetryGetBlock: 5,
         retryDelayGetBlockMs: 200,
         maxRetryGetLogs: 5,
         retryDelayGetLogsMs: 200,
-        blockFinality: 1,
         batchSize: 2,
       });
 
@@ -634,12 +669,12 @@ describe("Block Manager", () => {
       const blockManager = new BlockManager({
         maxBlockCached: 2,
         getBlock: mockRpc.getBlock.bind(mockRpc),
+        getBlocksBatch: mockRpc.getBlocksBatch.bind(mockRpc),
         getLogs: mockRpc.getLogs.bind(mockRpc),
         maxRetryGetBlock: 5,
         retryDelayGetBlockMs: 200,
         maxRetryGetLogs: 5,
         retryDelayGetLogsMs: 200,
-        blockFinality: 1,
         batchSize: 2,
       });
 
@@ -666,12 +701,12 @@ describe("Block Manager", () => {
       const blockManager = new BlockManager({
         maxBlockCached: 4,
         getBlock: mockRpc.getBlock.bind(mockRpc),
+        getBlocksBatch: mockRpc.getBlocksBatch.bind(mockRpc),
         getLogs: mockRpc.getLogs.bind(mockRpc),
         maxRetryGetBlock: 5,
         retryDelayGetBlockMs: 200,
         maxRetryGetLogs: 5,
         retryDelayGetLogsMs: 200,
-        blockFinality: 1,
         batchSize: 2,
       });
 
@@ -685,8 +720,78 @@ describe("Block Manager", () => {
 
       assert.equal(error, undefined);
       assert.equal(rollback, undefined);
-      assert.notEqual(logs, undefined);
-      assert.equal(logs!.length, 0);
+      assert.equal(logs!.length, 4);
+      assert.equal(logs[0], blockChain1[2].logs[0]);
+      assert.equal(logs[1], blockChain1[2].logs[1]);
+      assert.equal(logs[2], blockChain1[3].logs[0]);
+      assert.equal(logs[3], blockChain1[3].logs[1]);
+    });
+
+    it("Batch querying block with bach size bigger than gap", async () => {
+      const mockRpc = new MockRpc(blockChain1);
+
+      const blockManager = new BlockManager({
+        maxBlockCached: 4,
+        getBlock: mockRpc.getBlock.bind(mockRpc),
+        getBlocksBatch: mockRpc.getBlocksBatch.bind(mockRpc),
+        getLogs: mockRpc.getLogs.bind(mockRpc),
+        maxRetryGetBlock: 5,
+        retryDelayGetBlockMs: 200,
+        maxRetryGetLogs: 5,
+        retryDelayGetLogsMs: 200,
+        batchSize: 10,
+      });
+
+      await blockManager.initialize(blockChain1[1].block);
+
+      const { error, ok } = await blockManager.handleBlock(
+        blockChain1[7].block
+      );
+
+      const { logs, rollback } = ok!;
+
+      assert.equal(error, undefined);
+      assert.equal(rollback, undefined);
+      assert.equal(logs!.length, 4);
+      assert.equal(logs[0], blockChain1[2].logs[0]);
+      assert.equal(logs[1], blockChain1[2].logs[1]);
+      assert.equal(logs[2], blockChain1[3].logs[0]);
+      assert.equal(logs[3], blockChain1[3].logs[1]);
+    });
+
+    it("Batch querying block reorg", async () => {
+      const mockRpc = new MockRpc(blockChain1);
+
+      const blockManager = new BlockManager({
+        maxBlockCached: 4,
+        getBlock: mockRpc.getBlock.bind(mockRpc),
+        getBlocksBatch: mockRpc.getBlocksBatch.bind(mockRpc),
+        getLogs: mockRpc.getLogs.bind(mockRpc),
+        maxRetryGetBlock: 5,
+        retryDelayGetBlockMs: 200,
+        maxRetryGetLogs: 5,
+        retryDelayGetLogsMs: 200,
+        batchSize: 2,
+      });
+
+      await blockManager.initialize(blockChain1[1].block);
+      await blockManager.handleBlock(blockChain1[2].block);
+
+      mockRpc.blockByNumber = blockChain2;
+
+      const { error, ok } = await blockManager.handleBlock(
+        blockChain2[4].block
+      );
+
+      const { logs, rollback } = ok!;
+
+      assert.equal(error, undefined);
+      assert.equal(rollback, undefined);
+      assert.equal(logs!.length, 3);
+      assert.equal(logs[0], blockChain2[2].logs[0]);
+      assert.equal(logs[1], blockChain2[3].logs[0]);
+      assert.equal(logs[2], blockChain2[4].logs[0]);
+      assert.equal(blockManager.getLastBlock(), blockChain2[4].block);
     });
   });
 
@@ -697,12 +802,12 @@ describe("Block Manager", () => {
       const blockManager = new BlockManager({
         maxBlockCached: 50,
         getBlock: mockRpc.getBlock.bind(mockRpc),
+        getBlocksBatch: mockRpc.getBlocksBatch.bind(mockRpc),
         getLogs: mockRpc.getLogs.bind(mockRpc),
         maxRetryGetBlock: 5,
         retryDelayGetBlockMs: 200,
         maxRetryGetLogs: 5,
         retryDelayGetLogsMs: 200,
-        blockFinality: 1,
         batchSize: 2,
       });
 
@@ -736,12 +841,12 @@ describe("Block Manager", () => {
       const blockManager = new BlockManager({
         maxBlockCached: 50,
         getBlock: mockRpc.getBlock.bind(mockRpc),
+        getBlocksBatch: mockRpc.getBlocksBatch.bind(mockRpc),
         getLogs: mockRpc.getLogs.bind(mockRpc),
         maxRetryGetBlock: 5,
         retryDelayGetBlockMs: 200,
         maxRetryGetLogs: 5,
         retryDelayGetLogsMs: 200,
-        blockFinality: 1,
         batchSize: 2,
       });
 
@@ -781,12 +886,12 @@ describe("Block Manager", () => {
       const blockManager = new BlockManager({
         maxBlockCached: 50,
         getBlock: mockRpc.getBlock.bind(mockRpc),
+        getBlocksBatch: mockRpc.getBlocksBatch.bind(mockRpc),
         getLogs: mockRpc.getLogs.bind(mockRpc),
         maxRetryGetBlock: 5,
         retryDelayGetBlockMs: 200,
         maxRetryGetLogs: 5,
         retryDelayGetLogsMs: 200,
-        blockFinality: 1,
         batchSize: 2,
       });
 
@@ -832,12 +937,12 @@ describe("Block Manager", () => {
       const blockManager = new BlockManager({
         maxBlockCached: 50,
         getBlock: mockRpc.getBlock.bind(mockRpc),
+        getBlocksBatch: mockRpc.getBlocksBatch.bind(mockRpc),
         getLogs: mockRpc.getLogs.bind(mockRpc),
         maxRetryGetBlock: 5,
         retryDelayGetBlockMs: 200,
         maxRetryGetLogs: 5,
         retryDelayGetLogsMs: 200,
-        blockFinality: 1,
         batchSize: 2,
       });
 
@@ -877,12 +982,12 @@ describe("Block Manager", () => {
       const blockManager = new BlockManager({
         maxBlockCached: 50,
         getBlock: mockRpc.getBlock.bind(mockRpc),
+        getBlocksBatch: mockRpc.getBlocksBatch.bind(mockRpc),
         getLogs: mockRpc.getLogs.bind(mockRpc),
         maxRetryGetBlock: 5,
         retryDelayGetBlockMs: 200,
         maxRetryGetLogs: 5,
         retryDelayGetLogsMs: 200,
-        blockFinality: 1,
         batchSize: 2,
       });
 
@@ -928,12 +1033,12 @@ describe("Block Manager", () => {
       const blockManager = new BlockManager({
         maxBlockCached: 50,
         getBlock: mockRpc.getBlock.bind(mockRpc),
+        getBlocksBatch: mockRpc.getBlocksBatch.bind(mockRpc),
         getLogs: mockRpc.getLogs.bind(mockRpc),
         maxRetryGetBlock: 5,
         retryDelayGetBlockMs: 200,
         maxRetryGetLogs: 5,
         retryDelayGetLogsMs: 200,
-        blockFinality: 1,
         batchSize: 2,
       });
 
@@ -975,12 +1080,12 @@ describe("Block Manager", () => {
       const blockManager = new BlockManager({
         maxBlockCached: 50,
         getBlock: mockRpc.getBlock.bind(mockRpc),
+        getBlocksBatch: mockRpc.getBlocksBatch.bind(mockRpc),
         getLogs: mockRpc.getLogs.bind(mockRpc),
         maxRetryGetBlock: 5,
         retryDelayGetBlockMs: 200,
         maxRetryGetLogs: 5,
         retryDelayGetLogsMs: 200,
-        blockFinality: 1,
         batchSize: 2,
       });
 
@@ -1024,12 +1129,12 @@ describe("Block Manager", () => {
       const blockManager = new BlockManager({
         maxBlockCached: 50,
         getBlock: mockRpc.getBlock.bind(mockRpc),
+        getBlocksBatch: mockRpc.getBlocksBatch.bind(mockRpc),
         getLogs: mockRpc.getLogs.bind(mockRpc),
         maxRetryGetBlock: 5,
         retryDelayGetBlockMs: 200,
         maxRetryGetLogs: 5,
         retryDelayGetLogsMs: 200,
-        blockFinality: 1,
         batchSize: 2,
       });
 
