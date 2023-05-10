@@ -5,6 +5,10 @@ import {
   ReliableWebsocketOptions,
 } from "./reliableWebsocket";
 import { JsonRPC } from "./jsonRpc";
+import logger from "../util/logger";
+import { sleep } from "@mangrovedao/commonlib.js";
+
+const NO_BLOCK_FACTOR = 10;
 
 const newHeadsMsg = `{"id": 1, "method": "eth_subscribe", "params": ["newHeads"]}`;
 
@@ -13,8 +17,11 @@ namespace ReliableWebsocketProvider {
   export type Options = Omit<
     ReliableWebsocketOptions,
     "msgHandler" | "initMessages"
-  >;
+  > & {
+    estimatedBlockTimeMs: number;
+  };
 }
+
 
 /**
   * ReliableWebsocketProvider is an implementation of ReliableProvider. It use websocket
@@ -23,9 +30,13 @@ namespace ReliableWebsocketProvider {
 class ReliableWebsocketProvider extends ReliableProvider {
   private reliableWebSocket: ReliableWebSocket;
 
+  private blockTimeout?: NodeJS.Timeout;
+
+  private blockTimeoutMs: number;
+
   constructor(
     options: ReliableProvider.Options,
-    wsOptions: ReliableWebsocketProvider.Options
+    private wsOptions: ReliableWebsocketProvider.Options
   ) {
     super(options);
     this.reliableWebSocket = new ReliableWebSocket({
@@ -33,13 +44,19 @@ class ReliableWebsocketProvider extends ReliableProvider {
       initMessages: [newHeadsMsg],
       ...wsOptions,
     });
+
+    this.blockTimeoutMs = this.wsOptions.estimatedBlockTimeMs * NO_BLOCK_FACTOR;
   }
 
   async _initialize(): Promise<void> {
     await this.reliableWebSocket.initialize();
+    this.blockTimeout = setTimeout(this.noBlockCallback.bind(this), this.blockTimeoutMs);
   }
 
   stop(): void {
+    clearTimeout(this.blockTimeout);
+    this.blockTimeout = undefined;
+
     this.reliableWebSocket.stop();
   }
 
@@ -53,6 +70,8 @@ class ReliableWebsocketProvider extends ReliableProvider {
       return;
     }
 
+    clearTimeout(this.blockTimeout);
+    this.blockTimeout = setTimeout(this.noBlockCallback.bind(this), this.blockTimeoutMs);
     const blockHeader: JsonRPC.BlockHeader = decodedMsg.ok.params.result;
 
     const block: BlockManager.Block = {
@@ -62,6 +81,12 @@ class ReliableWebsocketProvider extends ReliableProvider {
     };
 
     this.addBlockToQueue(block);
+  }
+
+  private async noBlockCallback() {
+    logger.error(`[ReliableWebsocketProvider] no block for ${this.blockTimeoutMs}ms restart websocket`);
+
+    this.reliableWebSocket.restart();
   }
 }
 

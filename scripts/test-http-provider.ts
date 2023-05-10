@@ -23,7 +23,7 @@ const reliableProvider = new ReliableHttpProvider(
     multiv2Address: '0x275617327c958bD06b5D6b871E7f491D76113dd8', //polygon
   },
   {
-    estimatedBlockTimeMs: 200,
+    estimatedBlockTimeMs: 2000,
     onError: (error: any) => {
       console.error(error);
       return false;
