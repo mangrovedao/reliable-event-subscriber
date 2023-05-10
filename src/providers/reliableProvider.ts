@@ -17,8 +17,6 @@ namespace ReliableProvider {
   };
 }
 
-const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000000000000000000000000000';
-
 /**
   * ReliableProvider is an abstract handling block and logs fetching.
   *
@@ -107,6 +105,9 @@ abstract class ReliableProvider {
     if (from === to) {
       return { error: undefined, ok: []};
     }
+    if (from < 1) {
+      from = 1;
+    }
     logger.debug(`[ReliableProvider] getBlockWithMultiCalls from: ${from}, to: ${to}`);
     const calls = [] as {
       target: string,
@@ -165,6 +166,10 @@ abstract class ReliableProvider {
       if (addressesAndTopics.length === 0) {
         return { error: undefined, ok: [] };
       }
+      if (from < 1) {
+        from = 1;
+      }
+
       const fromBlock = hexlify(from.valueOf());
       const toBlock = hexlify(to.valueOf());
       // cannot use provider.getLogs as it does not support multiplesAddress
