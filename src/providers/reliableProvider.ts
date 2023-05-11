@@ -1,6 +1,6 @@
 import { JsonRpcProvider, Log } from "@ethersproject/providers";
 import BlockManager from "../blockManager";
-import { hexlify } from "ethers/lib/utils";
+import { hexStripZeros, hexlify, stripZeros } from "ethers/lib/utils";
 import { Contract } from "ethers";
 import MULIV2ABI from '../abi/multi-v2.abi.json';
 import logger from "../util/logger";
@@ -170,8 +170,9 @@ abstract class ReliableProvider {
         from = 1;
       }
 
-      const fromBlock = hexlify(from.valueOf());
-      const toBlock = hexlify(to.valueOf());
+      const fromBlock = hexStripZeros(hexlify(from.valueOf()));
+      const toBlock = hexStripZeros(hexlify(to.valueOf()));
+
       // cannot use provider.getLogs as it does not support multiplesAddress
       const logs: ReliableProvider.LogWithHexStringBlockNumber[] =
         await this.options.provider.send("eth_getLogs", [
