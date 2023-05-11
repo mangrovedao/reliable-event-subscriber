@@ -6,7 +6,6 @@ import {
 } from "./reliableWebsocket";
 import { JsonRPC } from "./jsonRpc";
 import logger from "../util/logger";
-import { sleep } from "@mangrovedao/commonlib.js";
 
 const NO_BLOCK_FACTOR = 10;
 
@@ -87,6 +86,7 @@ class ReliableWebsocketProvider extends ReliableProvider {
     logger.error(`[ReliableWebsocketProvider] no block for ${this.blockTimeoutMs}ms restart websocket`);
 
     this.reliableWebSocket.restart();
+    this.blockTimeout = setTimeout(this.noBlockCallback.bind(this), this.blockTimeoutMs);
   }
 }
 

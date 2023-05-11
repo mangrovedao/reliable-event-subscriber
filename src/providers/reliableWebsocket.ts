@@ -54,6 +54,7 @@ export class ReliableWebSocket {
             }
           });
         } catch (e) {
+          logger.error(`[ReliableWebSocket] failed to initialize ${e}`);
           return reject(e);
         }
       });
@@ -74,7 +75,6 @@ export class ReliableWebSocket {
   }
 
   private onOpen() {
-    this.options.initMessages.forEach((msg) => this.ws!.send(msg));
     this.heartbeat();
   }
 
@@ -97,6 +97,7 @@ export class ReliableWebSocket {
       logger.debug("initialized");
       this.initCb(true);
       this.initCb = undefined;
+      this.options.initMessages.forEach((msg) => this.ws!.send(msg));
     }
 
     logger.debug("client pong");
@@ -119,7 +120,11 @@ export class ReliableWebSocket {
 
     logger.warn("[ReliableWebSocket] connection is dead try to reconnect");
     if (!this.shouldStop) {
-      this.initialize();
+      try {
+        this.initialize();
+      } catch (e) {
+        this.onClose();
+      }
     }
   }
 }
