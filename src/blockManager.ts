@@ -625,14 +625,14 @@ class BlockManager {
 
       const to = this.options.batchSize >= countBlocksLeft ? newBlock.number : from + this.options.batchSize;
 
-      /* fetch all blocks between from and to fetch `options.batchSize` blocks before from to prevent requerying later */
-      const blocksResult = await this.options.getBlocksBatch(from - this.options.batchSize, to);
+      /* fetch all blocks between from and to  */
+      const blocksResult = await this.options.getBlocksBatch(from - 1, to);
 
       if (blocksResult.error) {
         return { error: blocksResult.error, ok: undefined};
       }
 
-      const blocks = blocksResult.ok.slice(-(to - from) - 1); /* extract blocks between from (included) and to (included) */
+      const blocks = blocksResult.ok.slice(1); /* extract blocks between from (included) and to (included) */
 
       /* build a block map number to block */
       const blocksMap = blocksResult.ok.reduce((acc, block) => {
