@@ -342,7 +342,7 @@ describe("Block Manager", () => {
         retryDelayGetBlockMs: 200,
         maxRetryGetLogs: 5,
         retryDelayGetLogsMs: 200,
-        batchSize: 25,
+        batchSize: 100,
       });
 
       await blockManager.initialize(blockChain1[1].block);
@@ -376,7 +376,7 @@ describe("Block Manager", () => {
         retryDelayGetBlockMs: 200,
         maxRetryGetLogs: 5,
         retryDelayGetLogsMs: 200,
-        batchSize: 2,
+        batchSize: 100,
       });
 
       await blockManager.initialize(blockChain1[1].block);
@@ -409,7 +409,7 @@ describe("Block Manager", () => {
         retryDelayGetBlockMs: 200,
         maxRetryGetLogs: 5,
         retryDelayGetLogsMs: 200,
-        batchSize: 2,
+        batchSize: 100,
       });
 
       await blockManager.initialize(blockChain1[1].block);
@@ -443,7 +443,7 @@ describe("Block Manager", () => {
         retryDelayGetBlockMs: 200,
         maxRetryGetLogs: 5,
         retryDelayGetLogsMs: 200,
-        batchSize: 2,
+        batchSize: 100,
       });
 
       await blockManager.initialize(blockChain1[1].block);
@@ -480,7 +480,7 @@ describe("Block Manager", () => {
         retryDelayGetBlockMs: 200,
         maxRetryGetLogs: 5,
         retryDelayGetLogsMs: 200,
-        batchSize: 2,
+        batchSize: 100,
       });
 
       await blockManager.initialize(blockChain1[1].block);
@@ -511,7 +511,7 @@ describe("Block Manager", () => {
         retryDelayGetBlockMs: 200,
         maxRetryGetLogs: 5,
         retryDelayGetLogsMs: 200,
-        batchSize: 2,
+        batchSize: 100,
       });
 
       await blockManager.initialize(blockChain1[1].block);
@@ -538,7 +538,7 @@ describe("Block Manager", () => {
         retryDelayGetBlockMs: 200,
         maxRetryGetLogs: 5,
         retryDelayGetLogsMs: 200,
-        batchSize: 2,
+        batchSize: 100,
       });
 
       await blockManager.initialize(blockChain1[1].block);
@@ -571,7 +571,7 @@ describe("Block Manager", () => {
         retryDelayGetBlockMs: 200,
         maxRetryGetLogs: 5,
         retryDelayGetLogsMs: 200,
-        batchSize: 2,
+        batchSize: 100,
       });
 
       await blockManager.initialize(blockChain1[1].block);
@@ -604,7 +604,7 @@ describe("Block Manager", () => {
         retryDelayGetBlockMs: 200,
         maxRetryGetLogs: 5,
         retryDelayGetLogsMs: 200,
-        batchSize: 2,
+        batchSize: 100,
       });
 
       await blockManager.initialize(blockChain1[1].block);
@@ -645,7 +645,7 @@ describe("Block Manager", () => {
         retryDelayGetBlockMs: 200,
         maxRetryGetLogs: 5,
         retryDelayGetLogsMs: 200,
-        batchSize: 2,
+        batchSize: 100,
       });
 
       await blockManager.initialize(blockChain1[3].block);
@@ -675,7 +675,7 @@ describe("Block Manager", () => {
         retryDelayGetBlockMs: 200,
         maxRetryGetLogs: 5,
         retryDelayGetLogsMs: 200,
-        batchSize: 2,
+        batchSize: 100,
       });
 
       await blockManager.initialize(blockChain1[1].block);
@@ -707,7 +707,7 @@ describe("Block Manager", () => {
         retryDelayGetBlockMs: 200,
         maxRetryGetLogs: 5,
         retryDelayGetLogsMs: 200,
-        batchSize: 2,
+        batchSize: 100,
       });
 
       await blockManager.initialize(blockChain1[1].block);
@@ -771,7 +771,7 @@ describe("Block Manager", () => {
         retryDelayGetBlockMs: 200,
         maxRetryGetLogs: 5,
         retryDelayGetLogsMs: 200,
-        batchSize: 2,
+        batchSize: 10,
       });
 
       await blockManager.initialize(blockChain1[1].block);
@@ -808,7 +808,7 @@ describe("Block Manager", () => {
         retryDelayGetBlockMs: 200,
         maxRetryGetLogs: 5,
         retryDelayGetLogsMs: 200,
-        batchSize: 2,
+        batchSize: 100,
       });
 
       const subscriber1 = new MockSubscriber(addressSubscriber1, blockChain1);
@@ -847,7 +847,7 @@ describe("Block Manager", () => {
         retryDelayGetBlockMs: 200,
         maxRetryGetLogs: 5,
         retryDelayGetLogsMs: 200,
-        batchSize: 2,
+        batchSize: 100,
       });
 
       const subscriber1 = new MockSubscriber(addressSubscriber1, blockChain1);
@@ -892,7 +892,7 @@ describe("Block Manager", () => {
         retryDelayGetBlockMs: 200,
         maxRetryGetLogs: 5,
         retryDelayGetLogsMs: 200,
-        batchSize: 2,
+        batchSize: 100,
       });
 
       const subscriber1 = new MockSubscriber(addressSubscriber1, blockChain1);
@@ -943,7 +943,7 @@ describe("Block Manager", () => {
         retryDelayGetBlockMs: 200,
         maxRetryGetLogs: 5,
         retryDelayGetLogsMs: 200,
-        batchSize: 2,
+        batchSize: 100,
       });
 
       const subscriber1 = new MockSubscriber(addressSubscriber1, blockChain1);
@@ -988,7 +988,7 @@ describe("Block Manager", () => {
         retryDelayGetBlockMs: 200,
         maxRetryGetLogs: 5,
         retryDelayGetLogsMs: 200,
-        batchSize: 2,
+        batchSize: 100,
       });
 
       const subscriber1 = new MockSubscriber(addressSubscriber1, blockChain1);
@@ -1039,7 +1039,7 @@ describe("Block Manager", () => {
         retryDelayGetBlockMs: 200,
         maxRetryGetLogs: 5,
         retryDelayGetLogsMs: 200,
-        batchSize: 2,
+        batchSize: 100,
       });
 
       const subscriber1 = new MockSubscriber(addressSubscriber1, blockChain1);
@@ -1086,7 +1086,7 @@ describe("Block Manager", () => {
         retryDelayGetBlockMs: 200,
         maxRetryGetLogs: 5,
         retryDelayGetLogsMs: 200,
-        batchSize: 2,
+        batchSize: 100,
       });
 
       const subscriber1 = new MockSubscriber(addressSubscriber1, blockChain1);
@@ -1135,7 +1135,7 @@ describe("Block Manager", () => {
         retryDelayGetBlockMs: 200,
         maxRetryGetLogs: 5,
         retryDelayGetLogsMs: 200,
-        batchSize: 2,
+        batchSize: 100,
       });
 
       const subscriber1 = new MockSubscriber(addressSubscriber1, blockChain1);

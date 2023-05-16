@@ -133,8 +133,6 @@ namespace BlockManager {
   export type HandleBlockPostHookFunction = () => Promise<void>;
 }
 
-const BatchSizeRepopulate = 500;
-
 /*
  * The BlockManager class is a reliable way of handling chain reorganization.
  */
@@ -156,8 +154,8 @@ class BlockManager {
     [];
 
   constructor(private options: BlockManager.CreateOptions) {
-    if (options.maxBlockCached > BatchSizeRepopulate) {
-      throw new Error("BatchSizeRepopulate is smaller than max block cached");
+    if (options.maxBlockCached > this.options.batchSize) {
+      throw new Error("options.batchSize is smaller than max block cached");
     }
   }
 
@@ -279,7 +277,7 @@ class BlockManager {
     }
 
     const rpcBlocks = await this.options.getBlocksBatch(
-      this.lastBlock!.number - BatchSizeRepopulate,
+      this.lastBlock!.number - this.options.batchSize,
       this.lastBlock!.number,
     );
 
@@ -627,8 +625,8 @@ class BlockManager {
 
       const to = this.options.batchSize >= countBlocksLeft ? newBlock.number : from + this.options.batchSize;
 
-      /* fetch all blocks between from and to fetch `BatchSizeRepopulate` blocks before from to prevent requerying later */
-      const blocksResult = await this.options.getBlocksBatch(from - BatchSizeRepopulate, to);
+      /* fetch all blocks between from and to fetch `options.batchSize` blocks before from to prevent requerying later */
+      const blocksResult = await this.options.getBlocksBatch(from - this.options.batchSize, to);
 
       if (blocksResult.error) {
         return { error: blocksResult.error, ok: undefined};
