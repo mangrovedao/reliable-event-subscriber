@@ -76,7 +76,7 @@ jobs:
         else
           tag="latest"
         fi
-        mv .yarnrc.yml.bckp .yarnrc.yml
+        yarn set version berry 
 
         echo "npmRegistries:" > ~/.yarnrc.yml
         echo "  https://registry.yarnpkg.com:" >> ~/.yarnrc.yml
