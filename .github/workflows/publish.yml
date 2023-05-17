@@ -84,6 +84,7 @@ jobs:
           tag="latest"
         fi
         yarn set version berry
+        cat .yarnrc.yml
         yarn npm publish --access public --tag $tag
       env:
         INPUT_REVISION: ${{ inputs.revision }}
