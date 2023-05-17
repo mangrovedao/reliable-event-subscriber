@@ -75,7 +75,6 @@ jobs:
           tag="latest"
         fi
         yarn set version berry
-        echo "npmAuditRegistry: \"https://registry.npmjs.org\"" > .yarnrc.yml
         echo "npmAuthToken: \"$NODE_AUTH_TOKEN\"" >> .yarnrc.yml
         cat .yarnrc.yml
         yarn npm publish --access public --tag $tag
