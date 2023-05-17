@@ -47,11 +47,10 @@ jobs:
     - run: yarn run build
     - run: yarn run test
 
-    - name: create .yarnrc
+    - name: create .yarnrc.yml
       run: |
-        echo "npmRegistryServer: \"https://registry.npmjs.org\"" > .yarnrc.yml
-        echo "npmAuthToken: $NODE_AUTH_TOKEN" >> .yarnrc.yml
-        cp .yarnrc.yml /tmp/.yarnrc
+        echo "npmAuditRegistry: \"https://registry.npmjs.org\"" > .yarnrc.yml
+        echo "npmAuthToken: \"$NODE_AUTH_TOKEN\"" >> .yarnrc.yml
         cat .yarnrc.yml
       env:
         NODE_AUTH_TOKEN: ${{secrets.NODE_AUTH_TOKEN}}
