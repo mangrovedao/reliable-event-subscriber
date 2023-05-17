@@ -40,6 +40,7 @@
     "build-this-package": "tsc"
   },
   "dependencies": {
+    "@ethersproject/providers": "^5.7.2",
     "@mangrovedao/commonlib.js": "1.0.0",
     "async-mutex": "^0.4.0",
     "dotenv": "^16.0.3",
