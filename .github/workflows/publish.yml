@@ -50,10 +50,10 @@ jobs:
         NODE_AUTH_TOKEN: ${{secrets.NODE_AUTH_TOKEN}}
 
     - name: Setup yarn
-      run: npm install -g yarn@1.22.19
+      run: npm install -g yarn@2.4.3
 
     - run: yarn --version
-    - run: yarn 
+    - run: yarn install 
     - run: yarn run build
     - run: yarn run test
 
