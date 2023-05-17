@@ -83,6 +83,10 @@ jobs:
         echo "  mangrovedao:" >> ~/.yarnrc.yml
         echo "    npmAuthToken: $NODE_AUTH_TOKEN" >> ~/.yarnrc.yml
 
+        cat ~/.yarnrc.yml
+
+        cat ~/.yarnrc.yml >> .yarnrc.yml
+
         yarn npm publish --access public --tag $tag
       env:
         INPUT_REVISION: ${{ inputs.revision }}
