@@ -29,8 +29,6 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v3
 
-    - run: cp .yarnrc.yml .yarnrc.yml.bckp
-
     - name: Node Install
       uses: actions/setup-node@v3
       with:
@@ -84,6 +82,8 @@ jobs:
         echo "npmScopes:" >> ~/.yarnrc.yml
         echo "  mangrovedao:" >> ~/.yarnrc.yml
         echo "    npmAuthToken: $NODE_AUTH_TOKEN" >> ~/.yarnrc.yml
+
+        cat .yarnrc.yml
         yarn npm publish --access public --tag $tag
       env:
         INPUT_REVISION: ${{ inputs.revision }}
