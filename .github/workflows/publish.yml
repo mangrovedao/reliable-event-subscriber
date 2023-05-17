@@ -76,10 +76,10 @@ jobs:
         else
           tag="latest"
         fi
-        yarn set version berry
-        cat .yarnrc.yml
         cp .yarnrc.yml.bckp .yarnrc.yml
         echo "npmAuthToken: \"$NODE_AUTH_TOKEN\"" >> .yarnrc.yml
+        cat .yarnrc.yml
+        yarn set version berry
         cat .yarnrc.yml
         yarn npm publish --access public --tag $tag
       env:
