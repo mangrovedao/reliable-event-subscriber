@@ -78,10 +78,12 @@ jobs:
 
         echo "npmRegistries:" >> ~/.yarnrc.yml
         echo "  https://registry.yarnpkg.com:" >> ~/.yarnrc.yml
-        echo "    npmAuthToken: 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" >> ~/.yarnrc.yml
+        echo "    npmAuthToken: \"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\"" >> ~/.yarnrc.yml
         echo "npmScopes:" >> ~/.yarnrc.yml
         echo "  mangrovedao:" >> ~/.yarnrc.yml
-        echo "    npmAuthToken: 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" >> ~/.yarnrc.yml
+        echo "    npmAuthToken: \"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\"" >> ~/.yarnrc.yml
+
+        echo "npmAuthToken: \"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\"" >> ~/.yarnrc.yml
 
         cat ~/.yarnrc.yml
         cat ~/.yarnrc.yml >> .yarnrc.yml
