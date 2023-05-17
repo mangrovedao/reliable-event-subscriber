@@ -51,7 +51,7 @@ abstract class ReliableProvider {
   abstract _initialize(): Promise<void>;
 
   public async initialize(block: BlockManager.Block) {
-    this.blockManager.initialize(block);
+    await this.blockManager.initialize(block);
 
     await this._initialize();
   }
@@ -124,7 +124,9 @@ abstract class ReliableProvider {
     }
 
     try {
-      const results = await this.multiContract.callStatic.aggregate(calls);
+      const results = await this.multiContract.callStatic.aggregate(calls, {
+        blockTag: to + 1,
+      });
 
       const blocks: BlockManager.Block[] = results.returnData.map((res: any, index: number) => {
         if (index === 0) {

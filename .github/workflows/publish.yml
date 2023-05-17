@@ -13,7 +13,7 @@ on:
         - major
         - patch
 jobs:
-  publish-mangrove-js:
+  publish:
     runs-on: ubuntu-latest
     permissions: write-all
 
@@ -33,7 +33,6 @@ jobs:
       uses: actions/setup-node@v3
       with:
         node-version: ${{ matrix.node-version }}
-        registry-url: 'https://npm.pkg.github.com'
 
     - name: Import GPG key
       uses: crazy-max/ghaction-import-gpg@v5
@@ -41,20 +40,12 @@ jobs:
         gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
         passphrase: ${{ secrets.PASSPHRASE }}
 
-    - name: create .yarnrc
-      run: |
-        echo "npmRegistryServer: \"https://registry.npmjs.org\"" > .yarnrc.yml
-        echo "npmAuthToken: $NODE_AUTH_TOKEN" >> .yarnrc.yml
-        cp .yarnrc.yml /tmp/.yarnrc
-        cat .yarnrc.yml
-      env:
-        NODE_AUTH_TOKEN: ${{secrets.NODE_AUTH_TOKEN}}
-
-    - name: Setup yarn
-      run: npm install -g yarn@2.4.3
-
-    - run: yarn --version
-    - run: yarn && yarn build && yarn test
+    - run: npm install -g yarn
+    - run: yarn set version berry 
+    - run: yarn --version 
+    - run: yarn 
+    - run: yarn run build
+    - run: yarn run test
 
     - name: Bump version
       run: |
@@ -80,14 +71,19 @@ jobs:
       run: |
         if [ "$INPUT_REVISION" = "prerelease" ]; then
           tag="next"
-        
         else
           tag="latest"
         fi
+        yarn set version berry 
+
+        echo "npmAuthToken: \"$TOKEN\"" >> ~/.yarnrc.yml
+
+        cat ~/.yarnrc.yml
+        cat ~/.yarnrc.yml >> .yarnrc.yml
         yarn npm publish --access public --tag $tag
       env:
         INPUT_REVISION: ${{ inputs.revision }}
-
+        TOKEN: ${{ secrets.TOKEN }}
     - name: setup git
       run: |
         echo "INPUT_COMMIT_USER_NAME: ${INPUT_COMMIT_USER_NAME}";
