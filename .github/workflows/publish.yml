@@ -76,13 +76,13 @@ jobs:
         else
           tag="latest"
         fi
-        # cp .yarnrc.yml.bckp .yarnrc.yml
-        # echo "npmAuthToken: \"$NODE_AUTH_TOKEN\"" >> .yarnrc.yml
-        # echo "npmAlwaysAuth: true" >> .yarnrc.yml
-        # cat .yarnrc.yml
-        # yarn set version berry
-        # cat .yarnrc.yml
-        echo "//registry.npmjs.org/:$NODE_AUTH_TOKEN" > .npmrc
+        mv .yarnrc.yml.bckp .yarnrc.yml
+        echo "npmAuthToken: \"$NODE_AUTH_TOKEN\"" >> .yarnrc.yml
+        echo "npmAlwaysAuth: true" >> .yarnrc.yml
+        cat .yarnrc.yml
+        yarn set version berry
+        cat .yarnrc.yml
+        # echo "//registry.npmjs.org/:$NODE_AUTH_TOKEN" > .npmrc
         yarn npm publish --access public --tag $tag
       env:
         INPUT_REVISION: ${{ inputs.revision }}
