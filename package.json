@@ -6,7 +6,9 @@
   "license": "BSD-2-Clause",
   "typings": "dist/index.d.ts",
   "outDir": "./",
-  "publishConfig": { "@mangrovedao:registry": "https://registry.npmjs.org/" },
+  "publishConfig": {
+    "@mangrovedao:registry": "https://registry.npmjs.org/"
+  },
   "devDependencies": {
     "@espendk/json-file-reporter": "^1.4.2",
     "@prisma/client": "4.14.0",
