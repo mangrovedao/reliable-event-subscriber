@@ -667,7 +667,7 @@
     "@jridgewell/resolve-uri" "3.1.0"
     "@jridgewell/sourcemap-codec" "1.4.14"
 
-"@mangrovedao/commonlib.js@1.0.0":
+"@mangrovedao/commonlib.js@^1.0.0":
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/@mangrovedao/commonlib.js/-/commonlib.js-1.0.0.tgz#f58920142a56d999a51ae98daeb77810a43f1a99"
   integrity sha512-5ApjWUOZ6RlTmsO4iDpeAw33B1NFVd3WU0ZwgxR91Xw63K8eNJDiDnFw5KTo1Dtjr3JsgjTZDKTPj0jbLnqqxg==

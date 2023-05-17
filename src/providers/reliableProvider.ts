@@ -51,7 +51,7 @@ abstract class ReliableProvider {
   abstract _initialize(): Promise<void>;
 
   public async initialize(block: BlockManager.Block) {
-    this.blockManager.initialize(block);
+    await this.blockManager.initialize(block);
 
     await this._initialize();
   }
