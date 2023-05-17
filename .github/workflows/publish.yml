@@ -51,6 +51,7 @@ jobs:
 
     - run: npm install -g yarn
     - run: yarn set version berry 
+    - run: yarn --version 
     - run: yarn 
     - run: yarn run build
     - run: yarn run test
