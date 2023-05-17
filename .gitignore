@@ -21,3 +21,6 @@ src/types/typechain/*
 # deploy output by deploy script
 deploy_output.txt
 mangroveJsNodeState.dump
+.yarn
+yarn-error.log
+.yarnrc.yml
