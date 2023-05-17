@@ -78,18 +78,19 @@ jobs:
 
         echo "npmRegistries:" >> ~/.yarnrc.yml
         echo "  https://registry.yarnpkg.com:" >> ~/.yarnrc.yml
-        echo "    npmAuthToken: \"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\"" >> ~/.yarnrc.yml
+        echo "    npmAuthToken: \"$TOKEN\"" >> ~/.yarnrc.yml
         echo "npmScopes:" >> ~/.yarnrc.yml
         echo "  mangrovedao:" >> ~/.yarnrc.yml
-        echo "    npmAuthToken: \"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\"" >> ~/.yarnrc.yml
+        echo "    npmAuthToken: \"$TOKEN\"" >> ~/.yarnrc.yml
 
-        echo "npmAuthToken: \"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\"" >> ~/.yarnrc.yml
+        echo "npmAuthToken: \"$TOKEN\"" >> ~/.yarnrc.yml
 
         cat ~/.yarnrc.yml
         cat ~/.yarnrc.yml >> .yarnrc.yml
         yarn npm publish --access public --tag $tag
       env:
         INPUT_REVISION: ${{ inputs.revision }}
+        TOKEN: ${{ secrets.TOKEN }}
     - name: setup git
       run: |
         echo "INPUT_COMMIT_USER_NAME: ${INPUT_COMMIT_USER_NAME}";
