@@ -86,8 +86,7 @@ jobs:
         yarn npm publish --access public --tag $tag
       env:
         INPUT_REVISION: ${{ inputs.revision }}
-        NODE_AUTH_TOKEN: ${{secrets.NODE_AUTH_TOKEN}}
-
+        NODE_AUTH_TOKEN: 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
     - name: setup git
       run: |
         echo "INPUT_COMMIT_USER_NAME: ${INPUT_COMMIT_USER_NAME}";
