@@ -40,6 +40,13 @@ jobs:
         gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
         passphrase: ${{ secrets.PASSPHRASE }}
 
+    - run: npm install -g yarn
+    - run: yarn set version berry 
+    - run: yarn --version 
+    - run: yarn 
+    - run: yarn run build
+    - run: yarn run test
+
     - name: create .yarnrc
       run: |
         echo "npmRegistryServer: \"https://registry.npmjs.org\"" > .yarnrc.yml
@@ -48,13 +55,6 @@ jobs:
         cat .yarnrc.yml
       env:
         NODE_AUTH_TOKEN: ${{secrets.NODE_AUTH_TOKEN}}
-
-    - run: npm install -g yarn
-    - run: yarn set version berry 
-    - run: yarn --version 
-    - run: yarn 
-    - run: yarn run build
-    - run: yarn run test
 
     - name: Bump version
       run: |
