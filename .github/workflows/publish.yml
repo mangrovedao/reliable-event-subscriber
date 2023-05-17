@@ -76,13 +76,6 @@ jobs:
         fi
         yarn set version berry 
 
-        echo "npmRegistries:" >> ~/.yarnrc.yml
-        echo "  https://registry.yarnpkg.com:" >> ~/.yarnrc.yml
-        echo "    npmAuthToken: \"$TOKEN\"" >> ~/.yarnrc.yml
-        echo "npmScopes:" >> ~/.yarnrc.yml
-        echo "  mangrovedao:" >> ~/.yarnrc.yml
-        echo "    npmAuthToken: \"$TOKEN\"" >> ~/.yarnrc.yml
-
         echo "npmAuthToken: \"$TOKEN\"" >> ~/.yarnrc.yml
 
         cat ~/.yarnrc.yml
