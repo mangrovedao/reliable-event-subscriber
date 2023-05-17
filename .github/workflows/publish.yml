@@ -49,13 +49,9 @@ jobs:
       env:
         NODE_AUTH_TOKEN: ${{secrets.NODE_AUTH_TOKEN}}
 
-    - name: Setup yarn
-      run: npm install -g yarn@2.4.3
-
-    - run: yarn --version
-    - run: yarn install 
-    - run: yarn run build
-    - run: yarn run test
+    - run: npm install
+    - run: npm run build
+    - run: npm run test
 
     - name: Bump version
       run: |
