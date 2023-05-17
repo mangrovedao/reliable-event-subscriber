@@ -47,14 +47,6 @@ jobs:
     - run: yarn run build
     - run: yarn run test
 
-    - name: create .yarnrc.yml
-      run: |
-        echo "npmAuditRegistry: \"https://registry.npmjs.org\"" > .yarnrc.yml
-        echo "npmAuthToken: \"$NODE_AUTH_TOKEN\"" >> .yarnrc.yml
-        cat .yarnrc.yml
-      env:
-        NODE_AUTH_TOKEN: ${{secrets.NODE_AUTH_TOKEN}}
-
     - name: Bump version
       run: |
         echo $INPUT_REVISION
@@ -79,15 +71,17 @@ jobs:
       run: |
         if [ "$INPUT_REVISION" = "prerelease" ]; then
           tag="next"
-        
         else
           tag="latest"
         fi
         yarn set version berry
+        echo "npmAuditRegistry: \"https://registry.npmjs.org\"" > .yarnrc.yml
+        echo "npmAuthToken: \"$NODE_AUTH_TOKEN\"" >> .yarnrc.yml
         cat .yarnrc.yml
         yarn npm publish --access public --tag $tag
       env:
         INPUT_REVISION: ${{ inputs.revision }}
+        NODE_AUTH_TOKEN: ${{secrets.NODE_AUTH_TOKEN}}
 
     - name: setup git
       run: |
