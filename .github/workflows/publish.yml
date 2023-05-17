@@ -78,6 +78,7 @@ jobs:
         fi
         cp .yarnrc.yml.bckp .yarnrc.yml
         echo "npmAuthToken: \"$NODE_AUTH_TOKEN\"" >> .yarnrc.yml
+        echo "npmAlwaysAuth: true" >> .yarnrc.yml
         cat .yarnrc.yml
         yarn set version berry
         cat .yarnrc.yml
