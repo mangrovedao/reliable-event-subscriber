@@ -54,7 +54,9 @@ jobs:
       run: npm install -g yarn@2.4.3
 
     - run: yarn --version
-    - run: yarn && yarn build && yarn test
+    - run: yarn 
+    - run: yarn run build
+    - run: yarn run test
 
     - name: Bump version
       run: |
