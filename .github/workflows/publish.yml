@@ -76,14 +76,14 @@ jobs:
         fi
         yarn set version berry 
 
-        echo "npmAuthToken: \"$TOKEN\"" >> ~/.yarnrc.yml
+        echo "npmAuthToken: \"$NPM_TOKEN\"" >> ~/.yarnrc.yml
 
         cat ~/.yarnrc.yml
         cat ~/.yarnrc.yml >> .yarnrc.yml
         yarn npm publish --access public --tag $tag
       env:
         INPUT_REVISION: ${{ inputs.revision }}
-        TOKEN: ${{ secrets.TOKEN }}
+        NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
     - name: setup git
       run: |
         echo "INPUT_COMMIT_USER_NAME: ${INPUT_COMMIT_USER_NAME}";
