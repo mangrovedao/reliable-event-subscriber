@@ -6,6 +6,7 @@
   "license": "BSD-2-Clause",
   "typings": "dist/index.d.ts",
   "outDir": "./",
+  "files": ["dist"],
   "publishConfig": {
     "@mangrovedao:registry": "https://registry.npmjs.org/"
   },
