@@ -21,10 +21,8 @@ jobs:
     - name: Infos
       run: |
         echo "revision: $INPUT_REVISION"
-        echo -e changelog: $INPUT_CHANGELOG
       env:
         INPUT_REVISION: ${{ inputs.revision }}
-        INPUT_CHANGELOG: ${{ inputs.changelog }}
 
     - name: Checkout
       uses: actions/checkout@v3
