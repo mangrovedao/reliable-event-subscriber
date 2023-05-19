@@ -38,8 +38,6 @@ jobs:
         gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
         passphrase: ${{ secrets.PASSPHRASE }}
 
-    - run: npm install -g yarn
-    - run: yarn set version berry 
     - run: yarn --version 
     - run: yarn install --immutable
     - run: yarn run build
