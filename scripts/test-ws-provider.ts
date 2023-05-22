@@ -3,7 +3,7 @@ dotenv.config();
 
 import { WebSocketProvider } from "@ethersproject/providers";
 import { ReliableWebsocketProvider, enableLogging } from "../src";
-import { sleep } from "@mangrovedao/commonlib.js";
+import { sleep } from '../src/util/sleep';
 
 enableLogging();
 
