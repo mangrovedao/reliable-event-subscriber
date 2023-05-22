@@ -79,6 +79,7 @@ jobs:
       env:
         INPUT_REVISION: ${{ inputs.revision }}
         NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
     - name: setup git
       run: |
         echo "INPUT_COMMIT_USER_NAME: ${INPUT_COMMIT_USER_NAME}";
@@ -87,8 +88,8 @@ jobs:
         git config --global user.email ${INPUT_COMMIT_USER_EMAIL}
 
       env:
-        INPUT_COMMIT_USER_NAME:  github-actions-bot
-        INPUT_COMMIT_USER_EMAIL: github-actions-bot@users.noreply.github.com
+        INPUT_COMMIT_USER_NAME: github-actions-bot
+        INPUT_COMMIT_USER_EMAIL: automation@mangrove.exchange
 
     - name: git version
       run: |
@@ -101,7 +102,7 @@ jobs:
         echo "version: $PACKAGE_VERSION"
         git switch -c "release/v$PACKAGE_VERSION"
         git add package.json yarn.lock CHANGELOG.md
-        git commit -m "$PACKAGE_VERSION [$USER]"
+        git commit -S -m "$PACKAGE_VERSION [$USER]"
         git tag -m "v$PACKAGE_VERSION" -s "v$PACKAGE_VERSION"
         git push --set-upstream origin release/v$PACKAGE_VERSION
         git push --tags
