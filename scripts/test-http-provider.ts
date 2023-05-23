@@ -3,8 +3,8 @@ dotenv.config();
 
 import { JsonRpcProvider } from "@ethersproject/providers";
 import { BlockManager, LogSubscriber, ReliableHttpProvider, enableLogging } from "../src";
-import { sleep } from "@mangrovedao/commonlib.js";
 import { Log } from "@ethersproject/providers";
+import { sleep } from '../src/util/sleep';
 
 enableLogging();
 

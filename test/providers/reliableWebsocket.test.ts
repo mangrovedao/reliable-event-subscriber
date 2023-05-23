@@ -1,4 +1,3 @@
-import { sleep } from "@mangrovedao/commonlib.js";
 import assert from "assert";
 import { describe, it } from "mocha";
 import { WebSocketServer, WebSocket } from "ws";
@@ -7,6 +6,7 @@ import {
   ReliableWebsocketOptions,
 } from "../../src/providers/reliableWebsocket";
 import { enableLogging } from "../../src/util/logger";
+import { sleep } from "../../src/util/sleep";
 
 enableLogging();
 
