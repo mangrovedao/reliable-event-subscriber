@@ -12,9 +12,9 @@ import { LogDescription, hexlify } from 'ethers/lib/utils';
 import ERC20ABI from './abi/erc20.abi.json';
 import { sleep } from '../src/util/sleep';
 import { Mutex } from 'async-mutex';
-import { enableLogging } from '../src/util/logger';
+import { defaultLogger, enableLogging } from '../src/util/logger';
 
-enableLogging();
+enableLogging(defaultLogger);
 
 const prisma = new PrismaClient()
 

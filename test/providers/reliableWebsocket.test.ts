@@ -5,10 +5,10 @@ import {
   ReliableWebSocket,
   ReliableWebsocketOptions,
 } from "../../src/providers/reliableWebsocket";
-import { enableLogging } from "../../src/util/logger";
+import { defaultLogger, enableLogging } from "../../src/util/logger";
 import { sleep } from "../../src/util/sleep";
 
-enableLogging();
+enableLogging(defaultLogger);
 
 describe("Reliable Websocket", () => {
   const host = "127.0.0.1";

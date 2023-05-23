@@ -3,13 +3,13 @@ dotenv.config();
 
 import assert from "assert";
 import { describe, it } from "mocha";
-import { enableLogging } from "../src/util/logger";
+import { defaultLogger, enableLogging } from "../src/util/logger";
 import BlockManager from "../src/blockManager";
 import LogSubscriber from "../src/logSubscriber";
 import StateLogSubScriber from '../src/stateLogSubscriber';
 import { Log } from "@ethersproject/providers";
 
-enableLogging();
+enableLogging(defaultLogger);
 
 type BlockLogsState = {
   block: BlockManager.Block;
