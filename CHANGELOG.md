@@ -1,5 +1,7 @@
 # Next version
 
+# 1.1.17
+
 # 1.1.16
 
 - Use injected logger
