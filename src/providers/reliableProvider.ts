@@ -125,7 +125,7 @@ abstract class ReliableProvider {
 
     try {
       const results = await this.multiContract.callStatic.aggregate(calls, {
-        blockTag: to + 1,
+        blockTag: to,
       });
 
       const blocks: BlockManager.Block[] = results.returnData.map((res: any, index: number) => {
