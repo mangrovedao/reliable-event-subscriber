@@ -1,6 +1,6 @@
 # Next version
 
-# 1.1.15-0
+# 1.1.15
 
 - Make sure that automatic commits are verified
 
