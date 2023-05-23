@@ -31,6 +31,7 @@ abstract class ReliableProvider {
   private inProcess: boolean = false;
   private multiContract: Contract;
 
+
   constructor(
     protected options: ReliableProvider.Options,
   ) {
@@ -123,10 +124,10 @@ abstract class ReliableProvider {
       });
     }
 
+    const lastBlock = this.blockManager.getLastBlock();
     try {
-      const results = await this.multiContract.callStatic.aggregate(calls, {
-        blockTag: to,
-      });
+
+      const results = await this.multiContract.callStatic.aggregate(calls,  (lastBlock.number - this.options.batchSize) > to ?  { blockTag: to + 1 } : {}); // specify blockTag only if we are one batchSize away from lastBlock
 
       const blocks: BlockManager.Block[] = results.returnData.map((res: any, index: number) => {
         if (index === 0) {
