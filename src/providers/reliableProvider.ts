@@ -31,6 +31,8 @@ abstract class ReliableProvider {
   private inProcess: boolean = false;
   private multiContract: Contract;
 
+  protected lastReceivedBlock: BlockManager.Block | undefined;
+
   constructor(
     protected options: ReliableProvider.Options,
   ) {
@@ -52,6 +54,7 @@ abstract class ReliableProvider {
 
   public async initialize(block: BlockManager.Block) {
     await this.blockManager.initialize(block);
+    this.lastReceivedBlock = block;
 
     await this._initialize();
   }
@@ -61,6 +64,7 @@ abstract class ReliableProvider {
   getLatestBlock?(): Promise<void>;
 
   public addBlockToQueue(block: BlockManager.Block) {
+    this.lastReceivedBlock = block;
     this.queue.push(block);
     this.tick();
   }
@@ -124,9 +128,7 @@ abstract class ReliableProvider {
     }
 
     try {
-      const results = await this.multiContract.callStatic.aggregate(calls, {
-        blockTag: to,
-      });
+      const results = await this.multiContract.callStatic.aggregate(calls,  (this.lastReceivedBlock!.number - this.options.batchSize) > to ?  { blockTag: to + 1 } : {}); // specify blockTag only if we are one batchSize away from lastBlock
 
       const blocks: BlockManager.Block[] = results.returnData.map((res: any, index: number) => {
         if (index === 0) {

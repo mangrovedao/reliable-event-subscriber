@@ -1,5 +1,9 @@
 # Next version
 
+# 1.1.17
+
+- Improved batch get block
+
 # 1.1.16
 
 - Use injected logger
