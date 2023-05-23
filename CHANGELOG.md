@@ -1,5 +1,7 @@
 # Next version
 
+- Use injected logger
+
 # 1.1.15
 
 - Make sure that automatic commits are verified

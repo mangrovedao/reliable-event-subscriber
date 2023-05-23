@@ -5,8 +5,9 @@ import { JsonRpcProvider } from "@ethersproject/providers";
 import { BlockManager, LogSubscriber, ReliableHttpProvider, enableLogging } from "../src";
 import { Log } from "@ethersproject/providers";
 import { sleep } from '../src/util/sleep';
+import { defaultLogger } from '../src/util/logger';
 
-enableLogging();
+enableLogging(defaultLogger);
 
 const rpcHttpUrl = process.env.RPC_HTTP!;
 

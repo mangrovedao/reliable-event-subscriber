@@ -4,8 +4,9 @@ dotenv.config();
 import { WebSocketProvider } from "@ethersproject/providers";
 import { ReliableWebsocketProvider, enableLogging } from "../src";
 import { sleep } from '../src/util/sleep';
+import { defaultLogger } from '../src/util/logger';
 
-enableLogging();
+enableLogging(defaultLogger);
 
 const rpcWs = process.env.RPC_WS!;
 
