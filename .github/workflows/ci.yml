@@ -29,7 +29,7 @@ jobs:
     - name: Yarn setup (caching yarn dependencies)
       uses: actions/setup-node@v3
       with:
-        node-version: 16.x
+        node-version: 18.x
         cache: 'yarn'
 
     - run: yarn set version berry 
@@ -59,12 +59,12 @@ jobs:
      # to HEAD because a branch is checked out. We here find the actual SHA for HEAD.
     - name: Set Coveralls vars
       id: coveralls_vars
-      if: github.event_name != 'pull_request_target' 
+      if: github.event_name != 'pull_request' 
       run: echo "::set-output name=sha_for_head::$(git rev-parse HEAD)"
 
     - name: Upload to Coveralls
       uses: coverallsapp/github-action@master
-      if: github.event_name != 'pull_request_target' 
+      if: github.event_name != 'pull_request' 
       with:
         git-commit: ${{ steps.coveralls_vars.outputs.sha_for_head }}
         github-token: ${{ secrets.GITHUB_TOKEN }}
