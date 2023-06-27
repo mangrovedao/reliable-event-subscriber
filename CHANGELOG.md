@@ -1,5 +1,9 @@
 # Next version
 
+# 1.1.21
+
+- Add prepack script to package.json which builds before publishing to npm
+
 # 1.1.20
 
 - Logging improvements: Add missing context to a few logs and always log reorg detection as warning
