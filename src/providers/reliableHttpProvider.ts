@@ -52,7 +52,7 @@ class ReliableHttpProvider extends ReliableProvider {
           number: blockHeader.number,
         });
       } catch (e) {
-        logger.error('failed handling block', e);
+        logger.error('[ReliableHttpProvider] failed handling block', e);
         if (this.httpOptions.onError(e)) {
           this.stop();
         }

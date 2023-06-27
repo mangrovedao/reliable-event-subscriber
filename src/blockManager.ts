@@ -619,8 +619,8 @@ class BlockManager {
     const logs: Log[] = [];
     do {
       const countBlocksLeft = (newBlock.number - from) + 1; // from is included
-      logger.info(
-      `[BlockManager] handleBatchBlock() still ${countBlocksLeft} blocks`,
+      logger.debug(
+      `[BlockManager] handleBatchBlock() still ${countBlocksLeft} blocks left to handle`,
       );
 
       const to = this.options.batchSize >= countBlocksLeft ? newBlock.number : from + this.options.batchSize;
@@ -792,7 +792,7 @@ class BlockManager {
 
     if (newBlock.parentHash !== this.lastBlock!.hash) {
       /* newBlock is not successor of this.lastBlock a reorg has been detected */
-      logger.info(
+      logger.warn(
         '[BlockManager] handleBlock() reorg',
         {
           data: {
