@@ -1,5 +1,7 @@
 # Next version
 
+# 1.1.20
+
 - Logging improvements: Add missing context to a few logs and always log reorg detection as warning
 
 # 1.1.19
