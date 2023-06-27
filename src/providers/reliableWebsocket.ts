@@ -79,9 +79,9 @@ export class ReliableWebSocket {
   }
 
   private heartbeat() {
-    logger.debug("client heartbeat");
+    logger.debug("[ReliableWebSocket] client heartbeat");
     this.heartbeatTimeoutID = setTimeout(() => {
-      logger.debug("Ping response is too slow");
+      logger.debug("[ReliableWebSocket] Ping response is too slow");
       this.ws!.terminate();
     }, this.options.pingTimeoutMs);
 
@@ -94,13 +94,13 @@ export class ReliableWebSocket {
 
   private onPong() {
     if (this.initCb) {
-      logger.debug("initialized");
+      logger.debug("[ReliableWebSocket] initialized");
       this.initCb(true);
       this.initCb = undefined;
       this.options.initMessages.forEach((msg) => this.ws!.send(msg));
     }
 
-    logger.debug("client pong");
+    logger.debug("[ReliableWebSocket] client pong");
     clearTimeout(this.heartbeatTimeoutID);
     this.heartbeatTimeoutID = undefined;
   }

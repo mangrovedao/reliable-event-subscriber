@@ -1,5 +1,7 @@
 # Next version
 
+- Logging improvements: Add missing context to a few logs and always log reorg detection as warning
+
 # 1.1.19
 
 - Fixed get block batch when to is the head of the chain
