@@ -1,5 +1,9 @@
 # Next version
 
+# 1.1.22
+
+- Remove error message when block is "not processed yet" 
+
 # 1.1.21
 
 - Add prepack script to package.json which builds before publishing to npm
