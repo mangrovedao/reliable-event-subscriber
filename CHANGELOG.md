@@ -1,5 +1,7 @@
 # Next version
 
+# 1.1.22
+
 # 1.1.21
 
 - Add prepack script to package.json which builds before publishing to npm
