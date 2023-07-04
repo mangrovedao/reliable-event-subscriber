@@ -448,16 +448,19 @@ class BlockManager {
     if (error) {
       /* the rpc might be a bit late, wait retryDelayGetLogsMs to let it catch up */
       await sleep(this.options.retryDelayGetLogsMs);
-      logger.error(
-        '[BlockManager] queryLogs(): failure',
-        {
-          data: {
-            error,
-            fromBlock,
-            toBlock,
+
+      if (!error.includes("not processed yet")) {
+        logger.error(
+          '[BlockManager] queryLogs(): failure',
+          {
+            data: {
+              error,
+              fromBlock,
+              toBlock,
+            }
           }
-        }
-      );
+        );
+      }
       return this.queryLogs(fromBlock, toBlock, rec + 1);
     }
 
