@@ -83,7 +83,7 @@ class ReliableWebsocketProvider extends ReliableProvider {
   }
 
   private async noBlockCallback() {
-    logger.error(`[ReliableWebsocketProvider] no block for ${this.blockTimeoutMs}ms restart websocket`);
+    logger.warn(`[ReliableWebsocketProvider] no block for ${this.blockTimeoutMs}ms restart websocket`);
 
     this.reliableWebSocket.restart();
     this.blockTimeout = setTimeout(this.noBlockCallback.bind(this), this.blockTimeoutMs);
