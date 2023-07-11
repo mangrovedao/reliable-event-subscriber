@@ -475,6 +475,15 @@ class BlockManager {
       const block = 
         blocksMap ? blocksMap[log.blockNumber] : this.blocksByNumber[log.blockNumber]; // TODO: verify that block exists
 
+      if (!block) {
+        return {
+          error: {
+            error: "FailedFetchingLog",
+          },
+          ok: undefined,
+        };
+      }
+
       /* check if queried log comes from a known block in our cache */
       if (block.hash !== log.blockHash) {
         /* queried log comes from a block we don't know => we detected a reorg */
