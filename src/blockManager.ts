@@ -449,7 +449,7 @@ class BlockManager {
       /* the rpc might be a bit late, wait retryDelayGetLogsMs to let it catch up */
       await sleep(this.options.retryDelayGetLogsMs);
 
-      if (!error.includes("not processed yet")) {
+      if ((!error.includes("not processed yet") && !error.includes("cannot be found"))) {
         logger.error(
           '[BlockManager] queryLogs(): failure',
           {

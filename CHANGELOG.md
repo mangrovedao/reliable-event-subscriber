@@ -1,5 +1,9 @@
 # Next version
 
+# 1.1.24
+
+# 1.1.23
+
 # 1.1.22
 
 - Remove error message when block is "not processed yet" 
