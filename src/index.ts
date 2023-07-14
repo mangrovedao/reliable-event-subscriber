@@ -4,7 +4,6 @@ import ReliableWebsocketProvider from "./providers/reliableWebsocketProvider";
 import ReliableHttpProvider from "./providers/reliableHttpProvider";
 import LogSubscriber from "./logSubscriber";
 import StateLogSubscriber from "./stateLogSubscriber";
-import { enableLogging } from './util/logger';
 
 export {
   BlockManager,
@@ -12,6 +11,5 @@ export {
   ReliableWebsocketProvider,
   ReliableHttpProvider,
   LogSubscriber,
-  StateLogSubscriber,
-  enableLogging,
+  StateLogSubscriber
 };

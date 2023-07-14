@@ -5,7 +5,7 @@ import {
   ReliableWebsocketOptions,
 } from "./reliableWebsocket";
 import { JsonRPC } from "./jsonRpc";
-import logger from "../util/logger";
+import logger from "../util/logging/logger";
 
 const NO_BLOCK_FACTOR = 10;
 

@@ -1,10 +1,10 @@
 import { Log } from "@ethersproject/providers";
 import { sleep } from "./util/sleep";
 import { getAddress } from "ethers/lib/utils";
-import logger from "./util/logger";
 import LogSubscriber from "./logSubscriber";
 import { Result } from "./util/types";
 import { Mutex } from "async-mutex";
+import logger from "./util/logging/logger";
 
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000000000000000000000000000';
 

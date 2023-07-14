@@ -1,9 +1,9 @@
 import { Log } from "@ethersproject/providers";
 import { Mutex } from "async-mutex";
-import logger from "./util/logger";
 
 import BlockManager from "./blockManager";
 import LogSubscriber from "./logSubscriber";
+import logger from "./util/logging/logger";
 
 /**
  * StateLogSubscriber is an abstract implementation of LogSubscriber which keep
