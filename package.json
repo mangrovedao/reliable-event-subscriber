@@ -16,7 +16,7 @@
     "@espendk/json-file-reporter": "^1.4.2",
     "@prisma/client": "4.14.0",
     "@types/mocha": "^10.0.1",
-    "@types/node": "^20.4.2",
+    "@types/node": "^18.15.11",
     "@types/object-inspect": "^1.8.1",
     "@types/ws": "^8.5.4",
     "@typescript-eslint/eslint-plugin": "^5.58.0",
@@ -46,10 +46,11 @@
     "start": "node ./dist",
     "test": "cross-env NODE_ENV=test nyc --reporter=lcov mocha --config test/mocha/config/unit-tests.json --exit"
   },
-  "copyFiles":[
+  "copyFiles": [
     {
       "from": "src/util/logging/types/json-truncate/index.d.ts",
-      "to": "node_modules/json-truncate/index.d.ts"}
+      "to": "node_modules/json-truncate/index.d.ts"
+    }
   ],
   "dependencies": {
     "@ethersproject/providers": "^5.7.2",
@@ -63,7 +64,6 @@
     "json-truncate": "^3.0.0",
     "logform": "^2.5.1",
     "loglevel": "^1.8.1",
-    "triple-beam": "^1.4.1",
     "ws": "^8.13.0"
   },
   "packageManager": "yarn@3.5.1"
