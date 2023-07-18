@@ -78,7 +78,16 @@ abstract class ReliableProvider {
 
     let until = this.queue.length;
     for (let i = 0; i < until; ++i) {
-      await this.blockManager.handleBlock(this.queue[i]); // blocks needs to be handle in order
+      const result = await this.blockManager.handleBlock(this.queue[i]); // blocks needs to be handle in order
+      if (result.error) {
+        logger.error('[ReliableProvider] handle block', {
+          data: {
+            block: this.queue[i],
+            result,
+          }
+        });
+      }
+
       until = this.queue.length; // queue can grow during the async call
     }
 
