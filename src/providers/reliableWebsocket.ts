@@ -43,12 +43,12 @@ export class ReliableWebSocket {
           clearTimeout(this.pingTimeoutId);
           this.pingTimeoutId = undefined;
 
-          this.ws!.on("error", this.onError.bind(this));
-          this.ws!.on("open", this.onOpen.bind(this));
-          this.ws!.on("close", this.onClose.bind(this));
-          this.ws!.on("pong", this.onPong.bind(this));
+          this.ws.on("error", this.onError.bind(this));
+          this.ws.on("open", this.onOpen.bind(this));
+          this.ws.on("close", this.onClose.bind(this));
+          this.ws.on("pong", this.onPong.bind(this));
 
-          this.ws!.on("message", (message: string) => {
+          this.ws.on("message", (message: string) => {
             if (this.options.msgHandler) {
               this.options.msgHandler(message.toString());
             }
@@ -75,6 +75,7 @@ export class ReliableWebSocket {
   }
 
   private onOpen() {
+    logger.info("[ReliableWebSocket] open");
     this.heartbeat();
   }
 

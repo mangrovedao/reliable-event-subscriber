@@ -57,6 +57,8 @@ abstract class ReliableProvider {
     this.lastReceivedBlock = block;
 
     await this._initialize();
+
+    logger.debug(`[ReliableProvider] successfully initialized`);
   }
 
   public abstract stop(): void;
@@ -67,6 +69,10 @@ abstract class ReliableProvider {
     this.lastReceivedBlock = block;
     this.queue.push(block);
     this.tick();
+
+    logger.debug(`[ReliableProvider] addBlockToQueue`, {
+      data: block,
+    });
   }
 
   private async tick() {
@@ -98,6 +104,9 @@ abstract class ReliableProvider {
   protected async getBlock(number: number): Promise<BlockManager.ErrorOrBlock> {
     try {
       const block = await this.options.provider.getBlock(number);
+      logger.debug(`[ReliableWebSocket] getBlock successful`, {
+        data: block,
+      });
       return {
         error: undefined,
         ok: {
@@ -160,6 +169,7 @@ abstract class ReliableProvider {
 
       blocks.shift(); // removing (from - 1) block
   
+      logger.debug(`[ReliableWebSocket] getBlockWithMultiCalls successful. (blocks.length = ${blocks.length})`);
       return { 
         error: undefined, 
         ok: blocks, 
@@ -196,6 +206,7 @@ abstract class ReliableProvider {
           },
         ]);
 
+      logger.debug(`[ReliableWebSocket] getLogs successful. (logs.length = ${logs.length})`);
       return {
         error: undefined,
         ok: logs.map((log) => {

@@ -21,7 +21,6 @@ namespace ReliableWebsocketProvider {
   };
 }
 
-
 /**
   * ReliableWebsocketProvider is an implementation of ReliableProvider. It use websocket
   * subscription to "newHeads" to get new block.
@@ -48,11 +47,13 @@ class ReliableWebsocketProvider extends ReliableProvider {
   }
 
   async _initialize(): Promise<void> {
+    logger.debug(`[ReliableWebsocketProvider] _initialize()`);
     await this.reliableWebSocket.initialize();
     this.blockTimeout = setTimeout(this.noBlockCallback.bind(this), this.blockTimeoutMs);
   }
 
   stop(): void {
+    logger.info(`[ReliableWebsocketProvider] stop()`);
     clearTimeout(this.blockTimeout);
     this.blockTimeout = undefined;
 
@@ -68,6 +69,9 @@ class ReliableWebsocketProvider extends ReliableProvider {
     if (decodedMsg.ok.method !== "eth_subscription" || !decodedMsg.ok) {
       return;
     }
+    logger.debug(`[ReliableWebsocketProvider] received msg`, {
+      data: decodedMsg,
+    });
 
     clearTimeout(this.blockTimeout);
     this.blockTimeout = setTimeout(this.noBlockCallback.bind(this), this.blockTimeoutMs);
