@@ -1,12 +1,22 @@
 # Next version
 
+- improve loging
+
 # 1.1.26
+
+- improve loging
 
 # 1.1.25
 
+- improve loging
+
 # 1.1.24
 
+- improve loging
+
 # 1.1.23
+
+- improve loging
 
 # 1.1.22
 
