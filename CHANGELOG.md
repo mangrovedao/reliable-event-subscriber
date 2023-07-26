@@ -1,5 +1,7 @@
 # Next version
 
+# 1.1.27
+
 - improve loging
 
 # 1.1.26
