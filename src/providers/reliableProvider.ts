@@ -10,6 +10,7 @@ namespace ReliableProvider {
   export type Options = BlockManager.Options & {
     provider: JsonRpcProvider;
     multiv2Address: string;
+    getLogsTimeout: number;
   };
 
   export type LogWithHexStringBlockNumber = Omit<Log, "blockNumber"> & {
@@ -185,55 +186,62 @@ abstract class ReliableProvider {
     to: number,
     addressesAndTopics: BlockManager.AddressAndTopics[]
   ): Promise<BlockManager.ErrorOrLogs> {
-    try {
-      if (addressesAndTopics.length === 0) {
-        return { error: undefined, ok: [] };
-      }
-      if (from < 1) {
-        from = 1;
-      }
+    return new Promise<BlockManager.ErrorOrLogs>(async(resolve, reject) => {
+      const timeoutId = setTimeout(() => {
+        reject({ error: "Timeout", ok: undefined });
+      }, this.options.getLogsTimeout);
+      try {
+        if (addressesAndTopics.length === 0) {
+          return { error: undefined, ok: [] };
+        }
+        if (from < 1) {
+          from = 1;
+        }
 
-      const fromBlock = hexStripZeros(hexlify(from.valueOf()));
-      const toBlock = hexStripZeros(hexlify(to.valueOf()));
+        const fromBlock = hexStripZeros(hexlify(from.valueOf()));
+        const toBlock = hexStripZeros(hexlify(to.valueOf()));
 
-      // cannot use provider.getLogs as it does not support multiplesAddress
-      const logs: ReliableProvider.LogWithHexStringBlockNumber[] =
-        await this.options.provider.send("eth_getLogs", [
-          {
-            fromBlock,
-            toBlock,
-            address: addressesAndTopics.map((addr) => addr.address),
-          },
-        ]);
+        // cannot use provider.getLogs as it does not support multiplesAddress
+        const logs: ReliableProvider.LogWithHexStringBlockNumber[] =
+          await this.options.provider.send("eth_getLogs", [
+            {
+              fromBlock,
+              toBlock,
+              address: addressesAndTopics.map((addr) => addr.address),
+            },
+          ]);
 
-      logger.debug(`[ReliableWebSocket] getLogs successful. (logs.length = ${logs.length})`);
-      return {
-        error: undefined,
-        ok: logs.map((log) => {
-          return {
-            blockNumber: parseInt(log.blockNumber, 16),
-            blockHash: log.blockHash,
-            transactionIndex: log.transactionIndex,
+        logger.debug(`[ReliableWebSocket] getLogs successful. (logs.length = ${logs.length})`);
+        return resolve({
+          error: undefined,
+          ok: logs.map((log) => {
+            return {
+              blockNumber: parseInt(log.blockNumber, 16),
+              blockHash: log.blockHash,
+              transactionIndex: log.transactionIndex,
 
-            removed: log.removed,
+              removed: log.removed,
 
-            address: log.address,
-            data: log.data,
+              address: log.address,
+              data: log.data,
 
-            topics: log.topics,
+              topics: log.topics,
 
-            transactionHash: log.transactionHash,
-            logIndex: log.logIndex,
-          };
-        }),
-      };
-    } catch (e) {
-      if (e instanceof Error) {
-        return { error: e.message, ok: undefined };
-      } else {
-        return { error: "FailedFetchingLog", ok: undefined };
-      }
-    }
+              transactionHash: log.transactionHash,
+              logIndex: log.logIndex,
+            };
+          }),
+        });
+      } catch (e) {
+        if (e instanceof Error) {
+          return reject({ error: e.message, ok: undefined });
+        } else {
+          return reject({ error: "FailedFetchingLog", ok: undefined });
+        }
+      } finally {
+        clearTimeout(timeoutId);
+      } 
+    });
   }
 }
 
