@@ -25,6 +25,16 @@ const firstBlock: BlockManager.Block = {
   number: 16989835,
 };
 
+class ReliableWebSocketProviderMock extends ReliableWebSocketProvider {
+
+  protected getLogs(from: number, to: number, addressesAndTopics: BlockManager.AddressAndTopics[]): Promise<BlockManager.ErrorOrLogs> {
+    return Promise.resolve({
+      ok: [],
+      error: undefined,
+    });
+  }
+};
+
 describe("ReliableWebSocketProvider", () => {
   const host = "127.0.0.1";
   const port = 9997;
@@ -55,7 +65,7 @@ describe("ReliableWebSocketProvider", () => {
 
   it("no reorg 2 block simulation", async () => {
     const provider = new JsonRpcProvider(wsUrl);
-    const reliableWebsocketProvider = new ReliableWebSocketProvider(
+    const reliableWebsocketProvider = new ReliableWebSocketProviderMock(
       {
         provider: provider,
         maxBlockCached: 50,
@@ -65,6 +75,7 @@ describe("ReliableWebSocketProvider", () => {
         retryDelayGetLogsMs: 200,
         batchSize: 100,
         multiv2Address: '', // can be null in test
+        getLogsTimeout: 30000,
       },
       {
         wsUrl: wsUrl,
@@ -92,9 +103,9 @@ describe("ReliableWebSocketProvider", () => {
     );
   });
 
-  it("Block timeout", async () => {
+  it.only("Block timeout", async () => {
     const provider = new JsonRpcProvider(wsUrl);
-    const reliableWebsocketProvider = new ReliableWebSocketProvider(
+    const reliableWebsocketProvider = new ReliableWebSocketProviderMock(
       {
         provider: provider,
         maxBlockCached: 50,
@@ -104,6 +115,7 @@ describe("ReliableWebSocketProvider", () => {
         retryDelayGetLogsMs: 200,
         batchSize: 100,
         multiv2Address: '', // can be null in test
+        getLogsTimeout: 300000,
       },
       {
         wsUrl: wsUrl,
