@@ -1,5 +1,9 @@
 # Next version
 
+# 1.1.28
+
+- reliableProvider: add timeout to getLogs 
+
 # 1.1.27
 
 - improve loging
