@@ -10,6 +10,7 @@ namespace ReliableProvider {
   export type Options = BlockManager.Options & {
     provider: JsonRpcProvider;
     multiv2Address: string;
+    getLogsTimeout: number;
   };
 
   export type LogWithHexStringBlockNumber = Omit<Log, "blockNumber"> & {
@@ -57,6 +58,8 @@ abstract class ReliableProvider {
     this.lastReceivedBlock = block;
 
     await this._initialize();
+
+    logger.debug(`[ReliableProvider] successfully initialized`);
   }
 
   public abstract stop(): void;
@@ -67,6 +70,10 @@ abstract class ReliableProvider {
     this.lastReceivedBlock = block;
     this.queue.push(block);
     this.tick();
+
+    logger.debug(`[ReliableProvider] addBlockToQueue`, {
+      data: block,
+    });
   }
 
   private async tick() {
@@ -78,7 +85,16 @@ abstract class ReliableProvider {
 
     let until = this.queue.length;
     for (let i = 0; i < until; ++i) {
-      await this.blockManager.handleBlock(this.queue[i]); // blocks needs to be handle in order
+      const result = await this.blockManager.handleBlock(this.queue[i]); // blocks needs to be handle in order
+      if (result.error) {
+        logger.warn('[ReliableProvider] handle block', {
+          data: {
+            block: this.queue[i],
+            result,
+          }
+        });
+      }
+
       until = this.queue.length; // queue can grow during the async call
     }
 
@@ -89,6 +105,9 @@ abstract class ReliableProvider {
   protected async getBlock(number: number): Promise<BlockManager.ErrorOrBlock> {
     try {
       const block = await this.options.provider.getBlock(number);
+      logger.debug(`[ReliableWebSocket] getBlock successful`, {
+        data: block,
+      });
       return {
         error: undefined,
         ok: {
@@ -151,6 +170,7 @@ abstract class ReliableProvider {
 
       blocks.shift(); // removing (from - 1) block
   
+      logger.debug(`[ReliableWebSocket] getBlockWithMultiCalls successful. (blocks.length = ${blocks.length})`);
       return { 
         error: undefined, 
         ok: blocks, 
@@ -166,54 +186,62 @@ abstract class ReliableProvider {
     to: number,
     addressesAndTopics: BlockManager.AddressAndTopics[]
   ): Promise<BlockManager.ErrorOrLogs> {
-    try {
-      if (addressesAndTopics.length === 0) {
-        return { error: undefined, ok: [] };
-      }
-      if (from < 1) {
-        from = 1;
-      }
+    return new Promise<BlockManager.ErrorOrLogs>(async(resolve, reject) => {
+      const timeoutId = setTimeout(() => {
+        reject({ error: "Timeout", ok: undefined });
+      }, this.options.getLogsTimeout);
+      try {
+        if (addressesAndTopics.length === 0) {
+          return { error: undefined, ok: [] };
+        }
+        if (from < 1) {
+          from = 1;
+        }
 
-      const fromBlock = hexStripZeros(hexlify(from.valueOf()));
-      const toBlock = hexStripZeros(hexlify(to.valueOf()));
+        const fromBlock = hexStripZeros(hexlify(from.valueOf()));
+        const toBlock = hexStripZeros(hexlify(to.valueOf()));
 
-      // cannot use provider.getLogs as it does not support multiplesAddress
-      const logs: ReliableProvider.LogWithHexStringBlockNumber[] =
-        await this.options.provider.send("eth_getLogs", [
-          {
-            fromBlock,
-            toBlock,
-            address: addressesAndTopics.map((addr) => addr.address),
-          },
-        ]);
+        // cannot use provider.getLogs as it does not support multiplesAddress
+        const logs: ReliableProvider.LogWithHexStringBlockNumber[] =
+          await this.options.provider.send("eth_getLogs", [
+            {
+              fromBlock,
+              toBlock,
+              address: addressesAndTopics.map((addr) => addr.address),
+            },
+          ]);
 
-      return {
-        error: undefined,
-        ok: logs.map((log) => {
-          return {
-            blockNumber: parseInt(log.blockNumber, 16),
-            blockHash: log.blockHash,
-            transactionIndex: log.transactionIndex,
+        logger.debug(`[ReliableWebSocket] getLogs successful. (logs.length = ${logs.length})`);
+        return resolve({
+          error: undefined,
+          ok: logs.map((log) => {
+            return {
+              blockNumber: parseInt(log.blockNumber, 16),
+              blockHash: log.blockHash,
+              transactionIndex: log.transactionIndex,
 
-            removed: log.removed,
+              removed: log.removed,
 
-            address: log.address,
-            data: log.data,
+              address: log.address,
+              data: log.data,
 
-            topics: log.topics,
+              topics: log.topics,
 
-            transactionHash: log.transactionHash,
-            logIndex: log.logIndex,
-          };
-        }),
-      };
-    } catch (e) {
-      if (e instanceof Error) {
-        return { error: e.message, ok: undefined };
-      } else {
-        return { error: "FailedFetchingLog", ok: undefined };
-      }
-    }
+              transactionHash: log.transactionHash,
+              logIndex: log.logIndex,
+            };
+          }),
+        });
+      } catch (e) {
+        if (e instanceof Error) {
+          return reject({ error: e.message, ok: undefined });
+        } else {
+          return reject({ error: "FailedFetchingLog", ok: undefined });
+        }
+      } finally {
+        clearTimeout(timeoutId);
+      } 
+    });
   }
 }
 
