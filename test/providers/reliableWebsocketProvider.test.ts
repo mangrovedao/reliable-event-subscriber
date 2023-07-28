@@ -103,7 +103,7 @@ describe("ReliableWebSocketProvider", () => {
     );
   });
 
-  it.only("Block timeout", async () => {
+  it("Block timeout", async () => {
     const provider = new JsonRpcProvider(wsUrl);
     const reliableWebsocketProvider = new ReliableWebSocketProviderMock(
       {
