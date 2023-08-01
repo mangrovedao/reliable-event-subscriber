@@ -241,6 +241,11 @@ abstract class ReliableProvider {
       } finally {
         clearTimeout(timeoutId);
       } 
+    }).catch((err: Error) => {
+      return Promise.resolve({
+        error: err.message,
+        ok: undefined,
+      });
     });
   }
 }
