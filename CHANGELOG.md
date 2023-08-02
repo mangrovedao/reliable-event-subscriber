@@ -1,5 +1,9 @@
 # Next version
 
+# 1.1.29
+
+- reliableProvider: fix unhandled rejection problem
+
 # 1.1.28
 
 - reliableProvider: add timeout to getLogs 
