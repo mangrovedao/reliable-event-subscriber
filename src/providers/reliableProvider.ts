@@ -3,7 +3,7 @@ import BlockManager from "../blockManager";
 import { hexStripZeros, hexlify, stripZeros } from "ethers/lib/utils";
 import { Contract } from "ethers";
 import MULIV2ABI from '../abi/multi-v2.abi.json';
-import logger from "../util/logger";
+import logger from "../util/logging/logger";
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 namespace ReliableProvider {

@@ -1,8 +1,5 @@
 import assert from "assert";
 import { describe, it } from "mocha";
-import { defaultLogger, enableLogging } from "../../src/util/logger";
-
-enableLogging(defaultLogger);
 
 import ReliableWebSocketProvider from "../../src/providers/reliableWebsocketProvider";
 import { JsonRpcProvider } from "@ethersproject/providers";

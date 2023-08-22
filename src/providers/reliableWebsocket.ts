@@ -1,4 +1,4 @@
-import logger from "../util/logger";
+import logger from "../util/logging/logger";
 import WebSocket from "isomorphic-ws";
 
 export type ReliableWebsocketOptions = {
