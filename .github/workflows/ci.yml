@@ -33,7 +33,7 @@ jobs:
         cache: 'yarn'
 
     - run: yarn set version berry 
-    - run: yarn install
+    - run: yarn install --immutable
 
     - name: Build
       run: yarn run build
