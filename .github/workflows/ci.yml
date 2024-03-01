@@ -32,7 +32,6 @@ jobs:
         node-version: 18.x
         cache: 'yarn'
 
-    - run: yarn set version berry 
     - run: yarn install --immutable
 
     - name: Build
