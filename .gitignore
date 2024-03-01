@@ -23,7 +23,6 @@ deploy_output.txt
 mangroveJsNodeState.dump
 yarn-error.log
 .pnp.*
-.yarn/*
 !.yarn/patches
 !.yarn/plugins
 !.yarn/releases
